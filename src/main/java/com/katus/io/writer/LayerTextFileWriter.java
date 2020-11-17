@@ -119,8 +119,9 @@ public class LayerTextFileWriter {
             if (withKey) {
                 builder.append(pairItem._1()).append("\t");
             }
-            builder.append(feature.getFid()).append("\t").append(feature.showAttributes());
-            if (builder.lastIndexOf("\t") == builder.length() - 1) builder.deleteCharAt(builder.length() - 1);
+            String attrStr = feature.showAttributes();
+            builder.append(feature.getFid()).append("\t").append(attrStr);
+            if (attrStr.isEmpty()) builder.deleteCharAt(builder.length() - 1);
             if (withGeometry) {
                 builder.append("\t").append(feature.getGeometry().toText());
             }

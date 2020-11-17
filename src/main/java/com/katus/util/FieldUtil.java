@@ -24,9 +24,9 @@ public final class FieldUtil {
         LinkedHashMap<String, Object> attributes = new LinkedHashMap<>();
         for (String fieldName : fieldNames) {
             if (fieldName.startsWith("target_")) {
-                attributes.put(fieldName, attr1.get(fieldName.substring(fieldName.indexOf("_") + 1)));
+                attributes.put(fieldName, attr1.getOrDefault(fieldName.substring(fieldName.indexOf("_") + 1), ""));
             } else {
-                attributes.put(fieldName, attr2.get(fieldName.substring(fieldName.indexOf("_") + 1)));
+                attributes.put(fieldName, attr2.getOrDefault(fieldName.substring(fieldName.indexOf("_") + 1), ""));
             }
         }
         return attributes;
