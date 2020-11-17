@@ -57,6 +57,10 @@ public class Feature implements Serializable {
         this.attributes.put(key, value);
     }
 
+    public void addAttributes(LinkedHashMap<String, Object> attributes) {
+        this.attributes.putAll(attributes);
+    }
+
     public void transform(CoordinateReferenceSystem oriCrs, CoordinateReferenceSystem tarCrs) throws FactoryException, TransformException {
         MathTransform mt = CRS.findMathTransform(oriCrs, tarCrs);
         this.geometry = JTS.transform(this.geometry, mt);
