@@ -6,6 +6,7 @@ import com.katus.entity.LayerMetadata;
 import com.katus.io.writer.LayerTextFileWriter;
 import com.katus.model.args.IntersectionArgs;
 import com.katus.util.CrsUtil;
+import com.katus.util.FieldUtil;
 import com.katus.util.InputUtil;
 import com.katus.util.SparkUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +16,6 @@ import org.locationtech.jts.geom.Geometry;
 import scala.Tuple2;
 
 import java.util.LinkedHashMap;
-import java.util.Map;
 
 /**
  * @author Keran Sun (katus)
@@ -66,7 +66,7 @@ public class Intersection {
     public static Layer intersection(Layer tarIndLayer, Layer extIndLayer) {
         LayerMetadata metadata1 = tarIndLayer.getMetadata();
         LayerMetadata metadata2 = extIndLayer.getMetadata();
-        String[] fieldNames = mergeFields(metadata1.getFieldNames(), metadata2.getFieldNames());
+        String[] fieldNames = FieldUtil.mergeFields(metadata1.getFieldNames(), metadata2.getFieldNames());
         JavaPairRDD<String, Feature> result = tarIndLayer.join(extIndLayer)
                 .mapToPair(pairItems -> {
                     Feature targetFeature = pairItems._2()._1();
@@ -76,7 +76,7 @@ public class Intersection {
                     Feature feature = null;
                     if (geoTarget.intersects(geoExtent)) {
                         String fid = targetFeature.getFid() + "#" + extentFeature.getFid();
-                        LinkedHashMap<String, Object> attributes = mergeAttributes(fieldNames, targetFeature.getAttributes(), extentFeature.getAttributes());
+                        LinkedHashMap<String, Object> attributes = FieldUtil.mergeAttributes(fieldNames, targetFeature.getAttributes(), extentFeature.getAttributes());
                         Geometry inter = geoExtent.intersection(geoTarget);
                         feature = new Feature(fid, attributes, inter);
                     }
@@ -85,29 +85,5 @@ public class Intersection {
                 .filter(pairItem -> pairItem._2() != null)
                 .cache();
         return Layer.create(result, fieldNames, metadata1.getCrs(), metadata1.getGeometryType(), result.count());
-    }
-
-    private static String[] mergeFields(String[] fieldNames1, String[] fieldNames2) {
-        String[] fieldNames = new String[fieldNames1.length + fieldNames2.length];
-        int i = 0;
-        for (String field : fieldNames1) {
-            fieldNames[i++] = "target_" + field;
-        }
-        for (String field : fieldNames2) {
-            fieldNames[i++] = "extent_" + field;
-        }
-        return fieldNames;
-    }
-
-    private static LinkedHashMap<String, Object> mergeAttributes(String[] fieldNames, Map<String, Object> attr1, Map<String, Object> attr2) {
-        LinkedHashMap<String, Object> attributes = new LinkedHashMap<>();
-        for (String fieldName : fieldNames) {
-            if (fieldName.startsWith("target_")) {
-                attributes.put(fieldName, attr1.get(fieldName.substring(fieldName.indexOf("_") + 1)));
-            } else {
-                attributes.put(fieldName, attr2.get(fieldName.substring(fieldName.indexOf("_") + 1)));
-            }
-        }
-        return attributes;
     }
 }
