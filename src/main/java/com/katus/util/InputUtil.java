@@ -33,7 +33,7 @@ public final class InputUtil {
 
     public static Layer makeLayer(SparkSession ss, String filename, Boolean hasHeader,
                                                       Boolean isWkt, String[] geometryFields, String separator,
-                                                      String crs, String charset) throws Exception {
+                                                      String crs, String charset, String geometryType) throws Exception {
         Layer layer;
         String fileURI;
         if (filename.startsWith("file://") || filename.startsWith("hdfs://")) {
@@ -46,6 +46,7 @@ public final class InputUtil {
             generator = new ShapeFileLayerGenerator(ss, filename);
         } else {
             TextFileReader reader = new TextFileReader(fileURI, hasHeader, isWkt, geometryFields, separator, crs, charset);
+            reader.setGeometryType(geometryType);
             generator = new TextFileLayerGenerator(ss, reader);
         }
         layer = generator.generate();

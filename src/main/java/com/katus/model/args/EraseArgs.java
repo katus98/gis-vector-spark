@@ -23,7 +23,9 @@ public class EraseArgs {
 
     @Option(name = "-input1", usage = "输入目标数据路径", required = true)
     private String input1;
-
+    /**
+     * The below is only for text file
+     */
     @Option(name = "-hasHeader1", usage = "输入目标数据是否含有标题行")
     private String hasHeader1 = "false";   // false, true
 
@@ -32,6 +34,9 @@ public class EraseArgs {
 
     @Option(name = "-geometryFields1", usage = "输入目标数据几何列")
     private String geometryFields1 = "-1";   // separate by ","
+
+    @Option(name = "-geometryType1", usage = "输入目标数据几何列")
+    private String geometryType1 = "LineString";   // Polygon, LineString, Point
 
     @Option(name = "-separator1", usage = "输入目标数据分隔符")
     private String separator1 = "\t";
@@ -44,7 +49,9 @@ public class EraseArgs {
 
     @Option(name = "-input2", usage = "输入范围数据路径", required = true)
     private String input2;
-
+    /**
+     * The below is only for text file
+     */
     @Option(name = "-hasHeader2", usage = "输入范围数据是否含有标题行")
     private String hasHeader2 = "false";   // false, true
 
@@ -53,6 +60,9 @@ public class EraseArgs {
 
     @Option(name = "-geometryFields2", usage = "输入范围数据几何列")
     private String geometryFields2 = "-1";   // separate by ","
+
+    @Option(name = "-geometryType2", usage = "输入目标数据几何列")
+    private String geometryType2 = "LineString";   // Polygon, LineString, Point
 
     @Option(name = "-separator2", usage = "输入范围数据分隔符")
     private String separator2 = "\t";

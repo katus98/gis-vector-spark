@@ -35,10 +35,10 @@ public class Erase {
         log.info("Make layers");
         Layer targetLayer = InputUtil.makeLayer(ss, mArgs.getInput1(), Boolean.valueOf(mArgs.getHasHeader1()),
                 Boolean.valueOf(mArgs.getIsWkt1()), mArgs.getGeometryFields1().split(","), mArgs.getSeparator1(),
-                mArgs.getCrs1(), mArgs.getCharset1());
+                mArgs.getCrs1(), mArgs.getCharset1(), mArgs.getGeometryType1());
         Layer extentLayer = InputUtil.makeLayer(ss, mArgs.getInput2(), Boolean.valueOf(mArgs.getHasHeader2()),
                 Boolean.valueOf(mArgs.getIsWkt2()), mArgs.getGeometryFields2().split(","), mArgs.getSeparator2(),
-                mArgs.getCrs2(), mArgs.getCharset2());
+                mArgs.getCrs2(), mArgs.getCharset2(), mArgs.getGeometryType2());
 
         log.info("Prepare calculation");
         if (!mArgs.getCrs().equals(mArgs.getCrs1())) {
