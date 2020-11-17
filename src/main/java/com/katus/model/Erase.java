@@ -6,6 +6,7 @@ import com.katus.entity.LayerMetadata;
 import com.katus.io.writer.LayerTextFileWriter;
 import com.katus.model.args.EraseArgs;
 import com.katus.util.CrsUtil;
+import com.katus.util.GeometryUtil;
 import com.katus.util.InputUtil;
 import com.katus.util.SparkUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -81,7 +82,18 @@ public class Erase {
                     } else {
                         feature = tarFeature;
                     }
-                    return new Tuple2<>(leftPairItems._1(), feature);
+                    return new Tuple2<>(leftPairItems._1() + "#" + feature.getFid(), feature);
+                })
+                .reduceByKey((feature1, feature2) -> {
+                    if (feature1 == null || feature2 == null) return null;
+                    if (GeometryUtil.getDimensionOfGeomType(feature1.getGeometry()) != 2) return null;
+                    if (GeometryUtil.getDimensionOfGeomType(feature2.getGeometry()) != 2) return null;
+                    if (feature1.getGeometry().intersects(feature2.getGeometry())) {
+                        Geometry inter = feature1.getGeometry().intersection(feature2.getGeometry());
+                        return new Feature(feature1.getFid(), feature1.getAttributes(), inter);
+                    } else {
+                        return null;
+                    }
                 })
                 .filter(pairItem -> pairItem._2().hasGeometry())
                 .cache();
