@@ -68,17 +68,14 @@ public class Clip {
                     Feature extentFeature = pairItems._2()._2();
                     Geometry geoTarget = targetFeature.getGeometry();
                     Geometry geoExtent = extentFeature.getGeometry();
-                    Feature feature = new Feature();
-                    feature.setFid("EMPTY");
+                    Feature feature = null;
                     if (geoTarget.intersects(geoExtent)) {
                         Geometry inter = geoExtent.intersection(geoTarget);
-                        feature.setFid(targetFeature.getFid());
-                        feature.setAttributes(targetFeature.getAttributes());
-                        feature.setGeometry(inter);
+                        feature = new Feature(targetFeature.getFid(), targetFeature.getAttributes(), inter);
                     }
                     return new Tuple2<>(pairItems._1(), feature);
                 })
-                .filter(pairItem -> !pairItem._2().getFid().equals("EMPTY"))
+                .filter(pairItem -> pairItem._2() != null)
                 .cache();
         return Layer.create(result, metadata.getFieldNames(), metadata.getCrs(), metadata.getGeometryType(), result.count());
     }
