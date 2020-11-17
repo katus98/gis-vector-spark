@@ -4,7 +4,7 @@ import com.katus.entity.Feature;
 import com.katus.entity.Layer;
 import com.katus.entity.LayerMetadata;
 import com.katus.io.writer.LayerTextFileWriter;
-import com.katus.model.args.ClipArgs;
+import com.katus.model.args.IntersectionArgs;
 import com.katus.util.CrsUtil;
 import com.katus.util.InputUtil;
 import com.katus.util.SparkUtil;
@@ -28,9 +28,9 @@ public class Intersection {
         SparkSession ss = SparkUtil.getSparkSession();
 
         log.info("Setup arguments");
-        ClipArgs mArgs = ClipArgs.initArgs(args);
+        IntersectionArgs mArgs = IntersectionArgs.initArgs(args);
         if (mArgs == null) {
-            String msg = "Init Clip Args failed, exit!";
+            String msg = "Init Intersection Args failed, exit!";
             log.error(msg);
             throw new RuntimeException(msg);
         }
