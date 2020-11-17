@@ -3,21 +3,40 @@ A framework for basic parallel model of geographic vector data based on Apache S
 
 ## Basic GIS model
 
-### Field Calculation & Statistics
-
-- [ ] String Selector
-- [ ] Numerical Selector
-- [ ] ...
-
 ### Geo Processing
 
 - [ ] Buffer
 - [x] Clip
-- [ ] Dissolve
+- [ ] Convex Hull
+- [x] Dissolve
 - [x] Erase
+- [x] Intersection
+- [ ] Symmetrical Difference
 - [ ] Union
-- [ ] ...
+
+### Geometry Tools
+
+- [ ] Multi Part To Single Parts
+- [ ] Polygons To Lines
+- [ ] Lines To Polygons
+
+### Field Tools
+
+- [ ] Field Selector
+  - [ ] Field String Selector
+  - [ ] Field Numerical Selector
+- [ ] Field Statistics
+- [ ] Field Join
+
+### Research Tools
+
+- [ ] Random Selection
 
 ### Analysis Tools
 
-- [ ] ...
+- [ ] Feature Spatial Count
+
+### Data Management Tools
+
+- [ ] Merge
+- [ ] Spatial Join
