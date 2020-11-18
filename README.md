@@ -30,7 +30,7 @@ A framework for basic parallel model of geographic vector data based on Apache S
 
 ### Research Tools
 
-- [ ] Random Selection
+- [x] Random Selection
 
 ### Analysis Tools
 
