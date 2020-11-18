@@ -1,6 +1,7 @@
 package com.katus.model.args;
 
-import com.katus.constant.TextRelationship;
+import com.katus.constant.NumberRelationship;
+import com.katus.constant.NumberType;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -15,23 +16,28 @@ import org.kohsuke.args4j.Option;
 @Getter
 @Setter
 @Slf4j
-public class FieldTextSelectorArgs {
+public class FieldNumericalSelectorArgs {
     @Option(name = "-output", usage = "输出文件路径", required = true)
     private String output;
 
     @Option(name = "-input", usage = "输入目标数据路径", required = true)
     private String input;
 
-    @Option(name = "-selectField", usage = "输入目标数据筛选字符串字段", required = true)
+    @Option(name = "-selectField", usage = "输入目标数据筛选数值字段", required = true)
     private String selectField;
     /**
-     * @see TextRelationship
+     * @see NumberRelationship
      */
-    @Option(name = "-textRelationship", usage = "用于筛选字符串的关系")
-    private String textRelationship = "equals";   // equals, contains, starts_with, ends_with
+    @Option(name = "-numberRelationship", usage = "用于筛选字符串的关系")
+    private String numberRelationship = "==";
+    /**
+     * @see NumberType
+     */
+    @Option(name = "-numberType", usage = "数值字段数据类型")
+    private String numberType = "Double";
 
-    @Option(name = "-keywords", usage = "筛选关键字", required = true)
-    private String keywords;   // separate by ","
+    @Option(name = "-threshold", usage = "筛选阈值", required = true)
+    private String threshold;
     /**
      * The below is only for text file
      */
@@ -56,8 +62,8 @@ public class FieldTextSelectorArgs {
     @Option(name = "-charset", usage = "输入目标数据字符集")
     private String charset = "UTF-8";   // UTF-8, GBK
 
-    public static FieldTextSelectorArgs initArgs(String[] args) {
-        FieldTextSelectorArgs mArgs = new FieldTextSelectorArgs();
+    public static FieldNumericalSelectorArgs initArgs(String[] args) {
+        FieldNumericalSelectorArgs mArgs = new FieldNumericalSelectorArgs();
         CmdLineParser parser = new CmdLineParser(mArgs);
         try {
             parser.parseArgument(args);

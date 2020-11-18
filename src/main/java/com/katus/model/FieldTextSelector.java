@@ -1,6 +1,6 @@
 package com.katus.model;
 
-import com.katus.constant.TextRelationShip;
+import com.katus.constant.TextRelationship;
 import com.katus.entity.Feature;
 import com.katus.entity.Layer;
 import com.katus.entity.LayerMetadata;
@@ -37,7 +37,7 @@ public class FieldTextSelector {
 
         log.info("Prepare calculation");
         String selectField = mArgs.getSelectField();
-        TextRelationShip relationShip = TextRelationShip.valueOf(mArgs.getTextRelationship().trim().toUpperCase());
+        TextRelationship relationShip = TextRelationship.valueOf(mArgs.getTextRelationship().trim().toUpperCase());
         String[] keywords = mArgs.getKeywords().split(",");
 
         log.info("Start Calculation");
@@ -50,46 +50,46 @@ public class FieldTextSelector {
         ss.close();
     }
 
-    public static Layer fieldTextSelect(Layer layer, String selectField, TextRelationShip relationShip, String[] keywords) {
+    public static Layer fieldTextSelect(Layer layer, String selectField, TextRelationship relationShip, String[] keywords) {
         if (keywords.length == 0 || (keywords.length == 1 && keywords[0].isEmpty())) return layer;
         LayerMetadata metadata = layer.getMetadata();
         JavaPairRDD<String, Feature> result = null;
         switch (relationShip) {
-            case EQUALS:
+            case EQUAL:
                 result = layer.filter(pairItem -> {
                     String value = (String) pairItem._2().getAttribute(selectField);
                     for (String keyword : keywords) {
                         if (value.equals(keyword)) return true;
                     }
                     return false;
-                });
+                }).cache();
                 break;
-            case CONTAINS:
+            case CONTAIN:
                 result = layer.filter(pairItem -> {
                     String value = (String) pairItem._2().getAttribute(selectField);
                     for (String keyword : keywords) {
                         if (value.contains(keyword)) return true;
                     }
                     return false;
-                });
+                }).cache();
                 break;
-            case STARTS_WITH:
+            case START_WITH:
                 result = layer.filter(pairItem -> {
                     String value = (String) pairItem._2().getAttribute(selectField);
                     for (String keyword : keywords) {
                         if (value.startsWith(keyword)) return true;
                     }
                     return false;
-                });
+                }).cache();
                 break;
-            case ENDS_WITH:
+            case END_WITH:
                 result = layer.filter(pairItem -> {
                     String value = (String) pairItem._2().getAttribute(selectField);
                     for (String keyword : keywords) {
                         if (value.endsWith(keyword)) return true;
                     }
                     return false;
-                });
+                }).cache();
                 break;
         }
         return Layer.create(result, metadata.getFieldNames(), metadata.getCrs(), metadata.getGeometryType(), result.count());

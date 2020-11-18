@@ -26,5 +26,11 @@ public class GtTest {
         System.out.println(p4.isEmpty());
         System.out.println(p5.isEmpty());
         System.out.println(p6.isEmpty());
+        test();
+    }
+
+    public static void test() {
+        Number num = 12L;
+        System.out.println(num.getClass());
     }
 }
