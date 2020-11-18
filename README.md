@@ -39,4 +39,4 @@ A framework for basic parallel model of geographic vector data based on Apache S
 ### Data Management Tools
 
 - [x] Merge
-- [ ] Spatial Join
+- [x] Spatial Join

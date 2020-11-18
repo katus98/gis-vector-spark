@@ -42,12 +42,6 @@ public class FieldJoin {
                 mArgs.getCrs2(), mArgs.getCharset2(), mArgs.getGeometryType2());
 
         log.info("Prepare calculation");
-        if (!mArgs.getCrs().equals(mArgs.getCrs1())) {
-            targetLayer = targetLayer.project(CrsUtil.getByCode(mArgs.getCrs()));
-        }
-        if (!mArgs.getCrs().equals(mArgs.getCrs2())) {
-            joinLayer = joinLayer.project(CrsUtil.getByCode(mArgs.getCrs()));
-        }
         JoinType joinType = JoinType.valueOf(mArgs.getJoinType().trim().toUpperCase());
         String[] joinFields1 = mArgs.getJoinFields1().split(",");
         String[] joinFields2 = mArgs.getJoinFields2().split(",");
@@ -95,10 +89,11 @@ public class FieldJoin {
                     }
                     tarFeature.setAttributes(attributes);
                     return new Tuple2<>(tarFeature.getFid(), tarFeature);
-                })
-                .cache();
+                });
         if (joinType.equals(JoinType.ONE_TO_ONE)) {
-            result = result.reduceByKey((feature1, feature2) -> feature1);
+            result = result.reduceByKey((f1, f2) -> f1).cache();
+        } else {
+            result = result.cache();
         }
         return Layer.create(result, fieldNames, metadata1.getCrs(), metadata1.getGeometryType(), result.count());
     }

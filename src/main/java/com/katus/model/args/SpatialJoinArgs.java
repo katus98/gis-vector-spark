@@ -1,6 +1,7 @@
 package com.katus.model.args;
 
 import com.katus.constant.JoinType;
+import com.katus.constant.SpatialRelationship;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -15,20 +16,25 @@ import org.kohsuke.args4j.Option;
 @Getter
 @Setter
 @Slf4j
-public class FieldJoinArgs {
+public class SpatialJoinArgs {
     @Option(name = "-output", usage = "输出文件路径", required = true)
     private String output;
+
+    @Option(name = "-crs", usage = "输出结果的地理参考")
+    private String crs = "4326";   // 4326, 3857
     /**
      * @see JoinType
      */
     @Option(name = "-joinType", usage = "连接类型")
     private String joinType = "one_to_one";   // one_to_one, one_to_many
+    /**
+     * @see SpatialRelationship
+     */
+    @Option(name = "-spatialRelationship", usage = "空间关系类型")
+    private String spatialRelationship = "intersects";
 
     @Option(name = "-input1", usage = "输入目标数据路径", required = true)
     private String input1;
-
-    @Option(name = "-joinFields1", usage = "输入目标数据连接字段", required = true)
-    private String joinFields1;   // separate by ","
     /**
      * The below is only for text file
      */
@@ -55,9 +61,6 @@ public class FieldJoinArgs {
 
     @Option(name = "-input2", usage = "输入范围数据路径", required = true)
     private String input2;
-
-    @Option(name = "-joinFields2", usage = "输入范围数据连接字段", required = true)
-    private String joinFields2;   // separate by ","
     /**
      * The below is only for text file
      */
@@ -82,8 +85,8 @@ public class FieldJoinArgs {
     @Option(name = "-charset2", usage = "输入范围数据字符集")
     private String charset2 = "UTF-8";   // UTF-8, GBK
 
-    public static FieldJoinArgs initArgs(String[] args) {
-        FieldJoinArgs mArgs = new FieldJoinArgs();
+    public static SpatialJoinArgs initArgs(String[] args) {
+        SpatialJoinArgs mArgs = new SpatialJoinArgs();
         CmdLineParser parser = new CmdLineParser(mArgs);
         try {
             parser.parseArgument(args);
