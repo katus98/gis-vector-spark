@@ -85,20 +85,6 @@ public class Erase {
                     }
                     return new Tuple2<>(leftPairItems._1() + "#" + feature.getFid(), feature);
                 })
-                .reduceByKey((feature1, feature2) -> {
-                    if (feature1 == null || feature2 == null) return null;
-                    feature1.setGeometry(GeometryUtil.breakGeometryCollectionByDimension(feature1.getGeometry(), dimension));
-                    feature2.setGeometry(GeometryUtil.breakGeometryCollectionByDimension(feature2.getGeometry(), dimension));
-                    if (GeometryUtil.getDimensionOfGeomType(feature1.getGeometry()) != dimension) return null;
-                    if (GeometryUtil.getDimensionOfGeomType(feature2.getGeometry()) != dimension) return null;
-                    if (feature1.getGeometry().intersects(feature2.getGeometry())) {
-                        Geometry inter = feature1.getGeometry().intersection(feature2.getGeometry());
-                        return new Feature(feature1.getFid(), feature1.getAttributes(), inter);
-                    } else {
-                        return null;
-                    }
-                })
-                .filter(pairItem -> pairItem._2() != null)
                 .mapToPair(pairItem -> {
                     Feature feature = pairItem._2();
                     feature.setGeometry(GeometryUtil.breakGeometryCollectionByDimension(feature.getGeometry(), dimension));
