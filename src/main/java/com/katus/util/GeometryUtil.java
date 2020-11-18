@@ -1,9 +1,9 @@
 package com.katus.util;
 
+import com.katus.constant.GeomConstant;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.io.ParseException;
-import org.locationtech.jts.io.WKTReader;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,7 +48,7 @@ public final class GeometryUtil {
                 }
             }
             if (geometries.isEmpty()) {
-                unionGeom = new WKTReader().read("POLYGON EMPTY");
+                unionGeom = GeomConstant.EMPTY_GEOM;
             } else {
                 unionGeom = geometries.get(0);
                 for (int i = 1; i < geometries.size(); i++) {
