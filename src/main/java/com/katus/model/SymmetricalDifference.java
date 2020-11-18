@@ -46,7 +46,7 @@ public class SymmetricalDifference {
         log.info("Dimension check");
         if (GeometryUtil.getDimensionOfGeomType(targetLayer.getMetadata().getGeometryType()) != 2 ||
                 GeometryUtil.getDimensionOfGeomType(extentLayer.getMetadata().getGeometryType()) != 2) {
-            String msg = "Geometry dimension must be 3, exit!";
+            String msg = "Geometry dimension must be 2, exit!";
             log.error(msg);
             throw new RuntimeException(msg);
         }

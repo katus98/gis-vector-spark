@@ -6,6 +6,7 @@ import com.katus.entity.LayerMetadata;
 import com.katus.io.writer.LayerTextFileWriter;
 import com.katus.model.args.ClipArgs;
 import com.katus.util.CrsUtil;
+import com.katus.util.GeometryUtil;
 import com.katus.util.InputUtil;
 import com.katus.util.SparkUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -40,6 +41,13 @@ public class Clip {
                 Boolean.valueOf(mArgs.getIsWkt2()), mArgs.getGeometryFields2().split(","), mArgs.getSeparator2(),
                 mArgs.getCrs2(), mArgs.getCharset2(), mArgs.getGeometryType2());
 
+        log.info("Dimension check");
+        if (GeometryUtil.getDimensionOfGeomType(extentLayer.getMetadata().getGeometryType()) != 2) {
+            String msg = "Extent Geometry dimension must be 2, exit!";
+            log.error(msg);
+            throw new RuntimeException(msg);
+        }
+
         log.info("Prepare calculation");
         if (!mArgs.getCrs().equals(mArgs.getCrs1())) {
             targetLayer = targetLayer.project(CrsUtil.getByCode(mArgs.getCrs()));
@@ -62,6 +70,7 @@ public class Clip {
 
     public static Layer clip(Layer tarIndLayer, Layer extIndLayer) {
         LayerMetadata metadata = tarIndLayer.getMetadata();
+        int dimension = GeometryUtil.getDimensionOfGeomType(metadata.getGeometryType());
         JavaPairRDD<String, Feature> result = tarIndLayer.join(extIndLayer)
                 .mapToPair(pairItems -> {
                     Feature targetFeature = pairItems._2()._1();
@@ -71,11 +80,12 @@ public class Clip {
                     Feature feature = null;
                     if (geoTarget.intersects(geoExtent)) {
                         Geometry inter = geoExtent.intersection(geoTarget);
+                        inter = GeometryUtil.breakGeometryCollectionByDimension(inter, dimension);
                         feature = new Feature(targetFeature.getFid(), targetFeature.getAttributes(), inter);
                     }
                     return new Tuple2<>(pairItems._1(), feature);
                 })
-                .filter(pairItem -> pairItem._2() != null)
+                .filter(pairItem -> pairItem._2() != null && GeometryUtil.getDimensionOfGeomType(pairItem._2().getGeometry()) == dimension)
                 .cache();
         return Layer.create(result, metadata.getFieldNames(), metadata.getCrs(), metadata.getGeometryType(), result.count());
     }

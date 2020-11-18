@@ -63,6 +63,7 @@ public class Erase {
 
     public static Layer erase(Layer tarIndLayer, Layer extIndLayer) {
         LayerMetadata metadata = tarIndLayer.getMetadata();
+        int dimension = GeometryUtil.getDimensionOfGeomType(metadata.getGeometryType());
         JavaPairRDD<String, Feature> reducedExtRDD = extIndLayer.reduceByKey((feature1, feature2) -> {
             Geometry whole = feature1.getGeometry().union(feature2.getGeometry());
             return new Feature(whole);
@@ -86,8 +87,10 @@ public class Erase {
                 })
                 .reduceByKey((feature1, feature2) -> {
                     if (feature1 == null || feature2 == null) return null;
-                    if (GeometryUtil.getDimensionOfGeomType(feature1.getGeometry()) != 2) return null;
-                    if (GeometryUtil.getDimensionOfGeomType(feature2.getGeometry()) != 2) return null;
+                    feature1.setGeometry(GeometryUtil.breakGeometryCollectionByDimension(feature1.getGeometry(), dimension));
+                    feature2.setGeometry(GeometryUtil.breakGeometryCollectionByDimension(feature2.getGeometry(), dimension));
+                    if (GeometryUtil.getDimensionOfGeomType(feature1.getGeometry()) != dimension) return null;
+                    if (GeometryUtil.getDimensionOfGeomType(feature2.getGeometry()) != dimension) return null;
                     if (feature1.getGeometry().intersects(feature2.getGeometry())) {
                         Geometry inter = feature1.getGeometry().intersection(feature2.getGeometry());
                         return new Feature(feature1.getFid(), feature1.getAttributes(), inter);
@@ -95,7 +98,13 @@ public class Erase {
                         return null;
                     }
                 })
-                .filter(pairItem -> pairItem._2().hasGeometry())
+                .filter(pairItem -> pairItem._2() != null)
+                .mapToPair(pairItem -> {
+                    Feature feature = pairItem._2();
+                    feature.setGeometry(GeometryUtil.breakGeometryCollectionByDimension(feature.getGeometry(), dimension));
+                    return new Tuple2<>(pairItem._1(), feature);
+                })
+                .filter(pairItem -> pairItem._2().hasGeometry() && GeometryUtil.getDimensionOfGeomType(pairItem._2().getGeometry()) == dimension)
                 .cache();
         return Layer.create(result, metadata.getFieldNames(), metadata.getCrs(), metadata.getGeometryType(), result.count());
     }

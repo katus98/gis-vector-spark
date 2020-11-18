@@ -11,7 +11,7 @@ A framework for basic parallel model of geographic vector data based on Apache S
 - [x] Dissolve
 - [x] Erase
 - [x] Intersection
-- [ ] Symmetrical Difference
+- [x] Symmetrical Difference
 - [ ] Union
 
 ### Geometry Tools

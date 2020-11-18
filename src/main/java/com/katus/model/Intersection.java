@@ -5,10 +5,7 @@ import com.katus.entity.Layer;
 import com.katus.entity.LayerMetadata;
 import com.katus.io.writer.LayerTextFileWriter;
 import com.katus.model.args.IntersectionArgs;
-import com.katus.util.CrsUtil;
-import com.katus.util.FieldUtil;
-import com.katus.util.InputUtil;
-import com.katus.util.SparkUtil;
+import com.katus.util.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.sql.SparkSession;
@@ -66,6 +63,9 @@ public class Intersection {
     public static Layer intersection(Layer tarIndLayer, Layer extIndLayer) {
         LayerMetadata metadata1 = tarIndLayer.getMetadata();
         LayerMetadata metadata2 = extIndLayer.getMetadata();
+        int dimension1 = GeometryUtil.getDimensionOfGeomType(metadata1.getGeometryType());
+        int dimension2 = GeometryUtil.getDimensionOfGeomType(metadata2.getGeometryType());
+        int dimension = Math.min(dimension1, dimension2);
         String[] fieldNames = FieldUtil.mergeFields(metadata1.getFieldNames(), metadata2.getFieldNames());
         JavaPairRDD<String, Feature> result = tarIndLayer.join(extIndLayer)
                 .mapToPair(pairItems -> {
@@ -78,11 +78,12 @@ public class Intersection {
                         String fid = targetFeature.getFid() + "#" + extentFeature.getFid();
                         LinkedHashMap<String, Object> attributes = FieldUtil.mergeAttributes(fieldNames, targetFeature.getAttributes(), extentFeature.getAttributes());
                         Geometry inter = geoExtent.intersection(geoTarget);
+                        inter = GeometryUtil.breakGeometryCollectionByDimension(inter, dimension);
                         feature = new Feature(fid, attributes, inter);
                     }
                     return new Tuple2<>(pairItems._1(), feature);
                 })
-                .filter(pairItem -> pairItem._2() != null)
+                .filter(pairItem -> pairItem._2() != null && GeometryUtil.getDimensionOfGeomType(pairItem._2().getGeometry()) == dimension)
                 .cache();
         return Layer.create(result, fieldNames, metadata1.getCrs(), metadata1.getGeometryType(), result.count());
     }
