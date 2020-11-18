@@ -16,7 +16,7 @@ A framework for basic parallel model of geographic vector data based on Apache S
 
 ### Geometry Tools
 
-- [ ] Multi Part To Single Parts
+- [x] Multi Part To Single Parts (Multi To Single)
 - [ ] Polygons To Lines
 - [ ] Lines To Polygons
 
