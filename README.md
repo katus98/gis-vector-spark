@@ -7,7 +7,7 @@ A framework for basic parallel model of geographic vector data based on Apache S
 
 - [ ] Buffer
 - [x] Clip
-- [ ] Convex Hull
+- [x] Convex Hull
 - [x] Dissolve
 - [x] Erase
 - [x] Intersection
