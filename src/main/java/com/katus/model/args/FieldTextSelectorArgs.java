@@ -9,20 +9,26 @@ import org.kohsuke.args4j.Option;
 
 /**
  * @author Keran Sun (katus)
- * @version 1.0, 2020-11-17
+ * @version 1.0, 2020-11-18
  */
 @Getter
 @Setter
 @Slf4j
-public class DissolveArgs {
+public class FieldTextSelectorArgs {
     @Option(name = "-output", usage = "输出文件路径", required = true)
     private String output;
 
     @Option(name = "-input", usage = "输入目标数据路径", required = true)
     private String input;
 
-    @Option(name = "-dissolveFields", usage = "输入目标数据溶解字段", required = true)
-    private String dissolveFields;   // separate by ","
+    @Option(name = "-selectField", usage = "输入目标数据筛选字符串字段", required = true)
+    private String selectField;
+
+    @Option(name = "-textRelationship", usage = "用于筛选字符串的关系")
+    private String textRelationship = "equals";   // equals, contains, starts_with, ends_with
+
+    @Option(name = "-keywords", usage = "筛选关键字", required = true)
+    private String keywords;   // separate by ","
     /**
      * The below is only for text file
      */
@@ -47,8 +53,8 @@ public class DissolveArgs {
     @Option(name = "-charset", usage = "输入目标数据字符集")
     private String charset = "UTF-8";   // UTF-8, GBK
 
-    public static DissolveArgs initArgs(String[] args) {
-        DissolveArgs mArgs = new DissolveArgs();
+    public static FieldTextSelectorArgs initArgs(String[] args) {
+        FieldTextSelectorArgs mArgs = new FieldTextSelectorArgs();
         CmdLineParser parser = new CmdLineParser(mArgs);
         try {
             parser.parseArgument(args);

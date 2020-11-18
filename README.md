@@ -23,7 +23,7 @@ A framework for basic parallel model of geographic vector data based on Apache S
 ### Field Tools
 
 - [ ] Field Selector
-  - [ ] Field String Selector
+  - [x] Field Text Selector
   - [ ] Field Numerical Selector
 - [ ] Field Statistics
 - [ ] Field Join
