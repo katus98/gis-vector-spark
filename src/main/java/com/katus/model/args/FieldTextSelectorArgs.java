@@ -10,7 +10,7 @@ import org.kohsuke.args4j.Option;
 
 /**
  * @author Keran Sun (katus)
- * @version 1.0, 2020-11-18
+ * @version 2.0, 2020-11-19
  */
 @Getter
 @Setter
@@ -18,6 +18,9 @@ import org.kohsuke.args4j.Option;
 public class FieldTextSelectorArgs {
     @Option(name = "-output", usage = "输出文件路径", required = true)
     private String output;
+
+    @Option(name = "-needHeader", usage = "输出文件是否含有标题行")
+    private String needHeader = "true";   // false, true
 
     @Option(name = "-input", usage = "输入目标数据路径", required = true)
     private String input;
@@ -28,7 +31,7 @@ public class FieldTextSelectorArgs {
      * @see TextRelationship
      */
     @Option(name = "-textRelationship", usage = "用于筛选字符串的关系")
-    private String textRelationship = "equals";   // equals, contains, starts_with, ends_with
+    private String textRelationship = "equal";   // equal, contain, start_with, end_with
 
     @Option(name = "-keywords", usage = "筛选关键字", required = true)
     private String keywords;   // separate by ","
@@ -44,7 +47,7 @@ public class FieldTextSelectorArgs {
     @Option(name = "-geometryFields", usage = "输入目标数据几何列")
     private String geometryFields = "-1";   // separate by ","
 
-    @Option(name = "-geometryType", usage = "输入目标数据几何列")
+    @Option(name = "-geometryType", usage = "输入目标数据几何类型")
     private String geometryType = "LineString";   // Polygon, LineString, Point
 
     @Option(name = "-separator", usage = "输入目标数据分隔符")
