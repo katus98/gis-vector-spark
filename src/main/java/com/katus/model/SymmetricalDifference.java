@@ -19,7 +19,7 @@ import java.util.List;
 
 /**
  * @author Keran Sun (katus)
- * @version 1.0, 2020-11-17
+ * @version 2.0, 2020-11-19
  */
 @Slf4j
 public class SymmetricalDifference {
@@ -36,16 +36,16 @@ public class SymmetricalDifference {
         }
 
         log.info("Make layers");
-        Layer targetLayer = InputUtil.makeLayer(ss, mArgs.getInput1(), Boolean.valueOf(mArgs.getHasHeader1()),
+        Layer layer1 = InputUtil.makeLayer(ss, mArgs.getInput1(), Boolean.valueOf(mArgs.getHasHeader1()),
                 Boolean.valueOf(mArgs.getIsWkt1()), mArgs.getGeometryFields1().split(","), mArgs.getSeparator1(),
                 mArgs.getCrs1(), mArgs.getCharset1(), mArgs.getGeometryType1());
-        Layer extentLayer = InputUtil.makeLayer(ss, mArgs.getInput2(), Boolean.valueOf(mArgs.getHasHeader2()),
+        Layer layer2 = InputUtil.makeLayer(ss, mArgs.getInput2(), Boolean.valueOf(mArgs.getHasHeader2()),
                 Boolean.valueOf(mArgs.getIsWkt2()), mArgs.getGeometryFields2().split(","), mArgs.getSeparator2(),
                 mArgs.getCrs2(), mArgs.getCharset2(), mArgs.getGeometryType2());
 
         log.info("Dimension check");
-        if (GeometryUtil.getDimensionOfGeomType(targetLayer.getMetadata().getGeometryType()) != 2 ||
-                GeometryUtil.getDimensionOfGeomType(extentLayer.getMetadata().getGeometryType()) != 2) {
+        if (GeometryUtil.getDimensionOfGeomType(layer1.getMetadata().getGeometryType()) != 2 ||
+                GeometryUtil.getDimensionOfGeomType(layer2.getMetadata().getGeometryType()) != 2) {
             String msg = "Geometry dimension must be 2, exit!";
             log.error(msg);
             throw new RuntimeException(msg);
@@ -53,29 +53,29 @@ public class SymmetricalDifference {
 
         log.info("Prepare calculation");
         if (!mArgs.getCrs().equals(mArgs.getCrs1())) {
-            targetLayer = targetLayer.project(CrsUtil.getByCode(mArgs.getCrs()));
+            layer1 = layer1.project(CrsUtil.getByCode(mArgs.getCrs()));
         }
         if (!mArgs.getCrs().equals(mArgs.getCrs2())) {
-            extentLayer = extentLayer.project(CrsUtil.getByCode(mArgs.getCrs()));
+            layer2 = layer2.project(CrsUtil.getByCode(mArgs.getCrs()));
         }
-        targetLayer = targetLayer.index(14);
-        extentLayer = extentLayer.index(14);
+        layer1 = layer1.index(14);
+        layer2 = layer2.index(14);
 
         log.info("Start Calculation");
-        Layer layer = symmetricalDifference(targetLayer, extentLayer);
+        Layer layer = symmetricalDifference(layer1, layer2);
 
         log.info("Output result");
         LayerTextFileWriter writer = new LayerTextFileWriter("", mArgs.getOutput());
-        writer.writeToFileByPartCollect(layer, true, false, true);
+        writer.writeToFileByPartCollect(layer, Boolean.parseBoolean(mArgs.getNeedHeader()), false, true);
 
         ss.close();
     }
 
-    public static Layer symmetricalDifference(Layer tarIndLayer, Layer extIndLayer) {
-        LayerMetadata metadata1 = tarIndLayer.getMetadata();
-        LayerMetadata metadata2 = extIndLayer.getMetadata();
-        String[] fieldNames = FieldUtil.mergeFields(metadata1.getFieldNames(), metadata2.getFieldNames());
-        JavaPairRDD<String, Feature> result = tarIndLayer.fullOuterJoin(extIndLayer)
+    public static Layer symmetricalDifference(Layer layer1, Layer layer2) {
+        LayerMetadata metadata1 = layer1.getMetadata();
+        LayerMetadata metadata2 = layer2.getMetadata();
+        String[] fieldNames = FieldUtil.merge(metadata1.getFieldNames(), metadata2.getFieldNames());
+        JavaPairRDD<String, Feature> result = layer1.fullOuterJoin(layer2)
                 .flatMapToPair(fullPairItems -> {
                     List<Tuple2<String, Feature>> resultList = new ArrayList<>();
                     Feature tarFeature = fullPairItems._2()._1().isPresent() ? fullPairItems._2()._1().get() : null;
@@ -83,17 +83,17 @@ public class SymmetricalDifference {
                     LinkedHashMap<String, Object> attributes1, attributes2;
                     Feature feature1 = null, feature2 = null;
                     if (tarFeature != null && extFeature != null) {
-                        attributes1 = AttributeUtil.mergeAttributes(fieldNames, tarFeature.getAttributes(), new HashMap<>());
-                        attributes2 = AttributeUtil.mergeAttributes(fieldNames, new HashMap<>(), extFeature.getAttributes());
+                        attributes1 = AttributeUtil.merge(fieldNames, tarFeature.getAttributes(), new HashMap<>());
+                        attributes2 = AttributeUtil.merge(fieldNames, new HashMap<>(), extFeature.getAttributes());
                         feature1 = new Feature(tarFeature.getFid(), attributes1, tarFeature.getGeometry().difference(extFeature.getGeometry()));
                         feature2 = new Feature(extFeature.getFid(), attributes2, extFeature.getGeometry().difference(tarFeature.getGeometry()));
                     } else {
                         if (tarFeature != null) {
-                            attributes1 = AttributeUtil.mergeAttributes(fieldNames, tarFeature.getAttributes(), new HashMap<>());
+                            attributes1 = AttributeUtil.merge(fieldNames, tarFeature.getAttributes(), new HashMap<>());
                             feature1 = new Feature(tarFeature.getFid(), attributes1, tarFeature.getGeometry());
                         }
                         if (extFeature != null) {
-                            attributes2 = AttributeUtil.mergeAttributes(fieldNames, new HashMap<>(), extFeature.getAttributes());
+                            attributes2 = AttributeUtil.merge(fieldNames, new HashMap<>(), extFeature.getAttributes());
                             feature2 = new Feature(extFeature.getFid(), attributes2, extFeature.getGeometry());
                         }
                     }

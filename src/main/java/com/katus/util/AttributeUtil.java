@@ -10,7 +10,7 @@ import java.util.Map;
 
 /**
  * @author Keran Sun (katus)
- * @version 1.0, 2020-11-19
+ * @version 2.0, 2020-11-19
  */
 public class AttributeUtil {
     public static LinkedHashMap<String, Object> merge(String[] fieldNames, Map<String, Object> attr1, Map<String, Object> attr2) {
@@ -23,9 +23,11 @@ public class AttributeUtil {
             } else {
                 String oriField = fieldName.substring(0, fieldName.length() - 2);
                 if (fieldName.endsWith("_1")) {
-                    attributes.put(fieldName, attr1.get(oriField));
+                    attributes.put(fieldName, attr1.getOrDefault(oriField, ""));
+                } else if (fieldName.endsWith("_2")){
+                    attributes.put(fieldName, attr2.getOrDefault(oriField, ""));
                 } else {
-                    attributes.put(fieldName, attr2.get(oriField));
+                    attributes.put(fieldName, "");
                 }
             }
         }
