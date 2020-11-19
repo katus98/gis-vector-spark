@@ -17,7 +17,7 @@ import scala.Tuple2;
 
 /**
  * @author Keran Sun (katus)
- * @version 1.0, 2020-11-16
+ * @version 2.0, 2020-11-16
  */
 @Slf4j
 public class Erase {
@@ -41,6 +41,13 @@ public class Erase {
                 Boolean.valueOf(mArgs.getIsWkt2()), mArgs.getGeometryFields2().split(","), mArgs.getSeparator2(),
                 mArgs.getCrs2(), mArgs.getCharset2(), mArgs.getGeometryType2());
 
+        log.info("Dimension check");
+        if (GeometryUtil.getDimensionOfGeomType(extentLayer.getMetadata().getGeometryType()) != 2) {
+            String msg = "Extent Geometry dimension must be 2, exit!";
+            log.error(msg);
+            throw new RuntimeException(msg);
+        }
+
         log.info("Prepare calculation");
         if (!mArgs.getCrs().equals(mArgs.getCrs1())) {
             targetLayer = targetLayer.project(CrsUtil.getByCode(mArgs.getCrs()));
@@ -56,7 +63,7 @@ public class Erase {
 
         log.info("Output result");
         LayerTextFileWriter writer = new LayerTextFileWriter("", mArgs.getOutput());
-        writer.writeToFileByPartCollect(layer);
+        writer.writeToFileByPartCollect(layer, Boolean.parseBoolean(mArgs.getNeedHeader()), false, true);
 
         ss.close();
     }
