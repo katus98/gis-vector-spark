@@ -17,7 +17,7 @@ import java.lang.reflect.Method;
 
 /**
  * @author Keran Sun (katus)
- * @version 1.0, 2020-11-18
+ * @version 2.0, 2020-11-19
  */
 @Slf4j
 public class FieldNumericalSelector {
@@ -50,7 +50,7 @@ public class FieldNumericalSelector {
 
         log.info("Output result");
         LayerTextFileWriter writer = new LayerTextFileWriter("", mArgs.getOutput());
-        writer.writeToFileByPartCollect(layer);
+        writer.writeToFileByPartCollect(layer, Boolean.parseBoolean(mArgs.getNeedHeader()), false, true);
 
         ss.close();
     }
@@ -58,10 +58,18 @@ public class FieldNumericalSelector {
     public static Layer fieldNumericalSelect(Layer layer, String selectField, NumberRelationship relationShip, NumberType numberType, Number threshold) {
         LayerMetadata metadata = layer.getMetadata();
         JavaPairRDD<String, Feature> result = layer.filter(pairItem -> {
-            String valueStr = (String) pairItem._2().getAttribute(selectField);
             Class<?> clazz = Class.forName(numberType.getClassFullName());
-            Method valueOfMethod = clazz.getMethod("valueOf", String.class);
-            Number number = (Number) valueOfMethod.invoke(null, valueStr);
+            Object value = pairItem._2().getAttribute(selectField);
+            Number number;
+            if (value instanceof String) {
+                String valueStr = (String) value;
+                Method valueOfMethod = clazz.getMethod("valueOf", String.class);
+                number = (Number) valueOfMethod.invoke(null, valueStr);
+            } else if (value instanceof Number) {
+                number = (Number) value;
+            } else {
+                return false;
+            }
             Method compareToMethod = clazz.getMethod("compareTo", clazz);
             Integer compareResult = (Integer) compareToMethod.invoke(number, threshold);
             return relationShip.check(compareResult);
