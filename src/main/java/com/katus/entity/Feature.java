@@ -53,6 +53,10 @@ public class Feature implements Serializable {
         return attributes.get(key);
     }
 
+    public void removeAttribute(String key) {
+        attributes.remove(key);
+    }
+
     public void setAttribute(String key, Object value) {
         this.attributes.put(key, value);
     }

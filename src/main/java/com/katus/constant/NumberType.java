@@ -39,4 +39,12 @@ public enum NumberType implements Serializable {
                 return null;
         }
     }
+
+    public boolean getIsDecimal() {
+        return this.equals(FLOAT) || this.equals(DOUBLE);
+    }
+
+    public static NumberType getByFieldName(String fieldName) {
+        return NumberType.valueOf(fieldName.substring(fieldName.lastIndexOf("(") + 1, fieldName.lastIndexOf(")")).toUpperCase());
+    }
 }
