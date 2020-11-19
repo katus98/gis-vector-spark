@@ -75,7 +75,7 @@ public class Feature implements Serializable {
         for (Map.Entry<String, Object> entry : attributes.entrySet()) {
             builder.append(entry.getValue()).append("\t");
         }
-        builder.deleteCharAt(builder.length() - 1);
+        if (attributes.keySet().size() > 0) builder.deleteCharAt(builder.length() - 1);
         return builder.toString();
     }
 

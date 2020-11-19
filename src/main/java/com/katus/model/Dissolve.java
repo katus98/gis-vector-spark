@@ -13,9 +13,11 @@ import org.apache.spark.sql.SparkSession;
 import org.locationtech.jts.geom.Geometry;
 import scala.Tuple2;
 
+import java.util.LinkedHashMap;
+
 /**
  * @author Keran Sun (katus)
- * @version 1.0, 2020-11-17
+ * @version 2.0, 2020-11-19
  */
 @Slf4j
 public class Dissolve {
@@ -38,13 +40,14 @@ public class Dissolve {
 
         log.info("Prepare calculation");
         String[] dissolveFields = mArgs.getDissolveFields().split(",");
+        if (dissolveFields[0].isEmpty()) dissolveFields = new String[0];
 
         log.info("Start Calculation");
         Layer layer = dissolve(targetLayer, dissolveFields);
 
         log.info("Output result");
         LayerTextFileWriter writer = new LayerTextFileWriter("", mArgs.getOutput());
-        writer.writeToFileByPartCollect(layer);
+        writer.writeToFileByPartCollect(layer, Boolean.parseBoolean(mArgs.getNeedHeader()), false, true);
 
         ss.close();
     }
@@ -53,21 +56,27 @@ public class Dissolve {
         LayerMetadata metadata = layer.getMetadata();
         JavaPairRDD<String, Feature> result = layer
                 .mapToPair(pairItem -> {
-                    StringBuilder key = new StringBuilder();
+                    StringBuilder key = new StringBuilder("Dissolve:");
                     Feature feature = pairItem._2();
                     for (String dissolveField : dissolveFields) {
                         key.append(feature.getAttribute(dissolveField)).append(",");
                     }
-                    key.deleteCharAt(key.length() - 1);
+                    if (dissolveFields.length > 0) key.deleteCharAt(key.length() - 1);
                     return new Tuple2<>(key.toString(), feature);
                 })
                 .reduceByKey((feature1, feature2) -> {
                     Geometry union = feature1.getGeometry().union(feature2.getGeometry());
-                    Feature feature = new Feature(union);
+                    feature1.setGeometry(union);
+                    return feature1;
+                })
+                .mapToPair(pairItem -> {
+                    Feature feature = pairItem._2();
+                    LinkedHashMap<String, Object> attributes = new LinkedHashMap<>();
                     for (String dissolveField : dissolveFields) {
-                        feature.setAttribute(dissolveField, feature1.getAttribute(dissolveField));
+                        attributes.put(dissolveField, feature.getAttribute(dissolveField));
                     }
-                    return feature;
+                    feature.setAttributes(attributes);
+                    return pairItem;
                 })
                 .cache();
         return Layer.create(result, dissolveFields, metadata.getCrs(), metadata.getGeometryType(), result.count());
