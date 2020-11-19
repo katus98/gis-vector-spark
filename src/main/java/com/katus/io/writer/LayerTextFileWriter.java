@@ -46,7 +46,7 @@ public class LayerTextFileWriter {
     }
 
     public void writeToFileByPartCollect(Layer layer) throws IOException {
-        writeToFileByPartCollect(layer, false, false, true);
+        writeToFileByPartCollect(layer, true, false, true);
     }
 
     public void writeToFileByPartCollect(Layer layer, Boolean withHeader, Boolean withKey, Boolean withGeometry) throws IOException {
@@ -100,14 +100,13 @@ public class LayerTextFileWriter {
         if (withKey) {
             builder.append("key\t");
         }
-        builder.append("fid\t");
         for (String fieldName : fieldNames) {
             builder.append(fieldName).append("\t");
         }
         if (withGeometry) {
             builder.append("wkt");
         } else {
-            builder.deleteCharAt(builder.length() - 1);
+            if (builder.length() > 0) builder.deleteCharAt(builder.length() - 1);
         }
         return builder.toString();
     }
@@ -120,8 +119,8 @@ public class LayerTextFileWriter {
                 builder.append(pairItem._1()).append("\t");
             }
             String attrStr = feature.showAttributes();
-            builder.append(feature.getFid()).append("\t").append(attrStr);
-            if (attrStr.isEmpty()) builder.deleteCharAt(builder.length() - 1);
+            builder.append(attrStr);
+            if (withKey && attrStr.isEmpty()) builder.deleteCharAt(builder.length() - 1);
             if (withGeometry) {
                 builder.append("\t").append(feature.getGeometry().toText());
             }

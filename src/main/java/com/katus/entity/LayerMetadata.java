@@ -33,7 +33,7 @@ public class LayerMetadata implements Serializable {
     @Override
     public String toString() {
         return "******Metadata******\n" +
-                "------Field Name------\nfid, " + Arrays.toString(fieldNames) + "\n" +
+                "------Field Name------\n" + Arrays.toString(fieldNames) + "\n" +
                 "------Coordinate Reference System (WKT)------\n" + crs + "\n" +
                 "------Geometry Type------\n" + geometryType + "\n" +
                 "------Feature Count------\n" + featureCount + "\n";
