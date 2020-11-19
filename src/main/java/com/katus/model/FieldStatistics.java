@@ -7,6 +7,7 @@ import com.katus.entity.Layer;
 import com.katus.entity.LayerMetadata;
 import com.katus.io.writer.LayerTextFileWriter;
 import com.katus.model.args.FieldStatisticsArgs;
+import com.katus.util.AttributeUtil;
 import com.katus.util.FieldUtil;
 import com.katus.util.InputUtil;
 import com.katus.util.SparkUtil;
@@ -76,7 +77,7 @@ public class FieldStatistics {
 
     public static Layer fieldStatistics(Layer layer, String[] categoryFields, List<String> summaryFields, List<NumberType> numberTypes, List<StatisticalMethod> statisticalMethods) {
         LayerMetadata metadata = layer.getMetadata();
-        String[] fieldNames = FieldUtil.initStatisticsFields(metadata.getFieldNames(), categoryFields, summaryFields, statisticalMethods);
+        String[] fieldNames = FieldUtil.initStatisticsFields(categoryFields, summaryFields, statisticalMethods);
         JavaPairRDD<String, Feature> result = layer
                 .mapToPair(pairItem -> {
                     Feature feature = pairItem._2();
@@ -89,13 +90,13 @@ public class FieldStatistics {
                         }
                         keyBuilder.deleteCharAt(keyBuilder.length() - 1);
                     }
-                    LinkedHashMap<String, Object> attributes = FieldUtil.initStatisticsAttributes(feature.getAttributes(), categoryFields, summaryFields, numberTypes, statisticalMethods);
+                    LinkedHashMap<String, Object> attributes = AttributeUtil.initStatistics(feature.getAttributes(), categoryFields, summaryFields, numberTypes, statisticalMethods);
                     feature.setAttributes(attributes);
                     feature.setGeometry(null);
                     return new Tuple2<>(keyBuilder.toString(), feature);
                 })
                 .reduceByKey((feature1, feature2) -> {
-                    LinkedHashMap<String, Object> attributes = FieldUtil.statisticAttributes(feature1.getAttributes(), feature2.getAttributes(), summaryFields);
+                    LinkedHashMap<String, Object> attributes = AttributeUtil.statistic(feature1.getAttributes(), feature2.getAttributes(), summaryFields);
                     return new Feature(feature1.getFid(), attributes);
                 }).mapToPair(pairItem -> {
                     Feature feature = pairItem._2();

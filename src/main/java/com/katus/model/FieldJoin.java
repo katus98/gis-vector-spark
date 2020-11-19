@@ -83,9 +83,9 @@ public class FieldJoin {
                     LinkedHashMap<String, Object> attributes;
                     if (leftPairItems._2()._2().isPresent()) {
                         Feature joinFeature = leftPairItems._2()._2().get();
-                        attributes = FieldUtil.mergeAttributes(fieldNames, tarFeature.getAttributes(), joinFeature.getAttributes());
+                        attributes = AttributeUtil.mergeAttributes(fieldNames, tarFeature.getAttributes(), joinFeature.getAttributes());
                     } else {
-                        attributes = FieldUtil.mergeAttributes(fieldNames, tarFeature.getAttributes(), new HashMap<>());
+                        attributes = AttributeUtil.mergeAttributes(fieldNames, tarFeature.getAttributes(), new HashMap<>());
                     }
                     tarFeature.setAttributes(attributes);
                     return new Tuple2<>(tarFeature.getFid(), tarFeature);

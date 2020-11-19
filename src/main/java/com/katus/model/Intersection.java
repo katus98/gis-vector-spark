@@ -16,7 +16,7 @@ import java.util.LinkedHashMap;
 
 /**
  * @author Keran Sun (katus)
- * @version 1.0, 2020-11-17
+ * @version 2.0, 2020-11-19
  */
 @Slf4j
 public class Intersection {
@@ -33,29 +33,29 @@ public class Intersection {
         }
 
         log.info("Make layers");
-        Layer targetLayer = InputUtil.makeLayer(ss, mArgs.getInput1(), Boolean.valueOf(mArgs.getHasHeader1()),
+        Layer layer1 = InputUtil.makeLayer(ss, mArgs.getInput1(), Boolean.valueOf(mArgs.getHasHeader1()),
                 Boolean.valueOf(mArgs.getIsWkt1()), mArgs.getGeometryFields1().split(","), mArgs.getSeparator1(),
                 mArgs.getCrs1(), mArgs.getCharset1(), mArgs.getGeometryType1());
-        Layer extentLayer = InputUtil.makeLayer(ss, mArgs.getInput2(), Boolean.valueOf(mArgs.getHasHeader2()),
+        Layer layer2 = InputUtil.makeLayer(ss, mArgs.getInput2(), Boolean.valueOf(mArgs.getHasHeader2()),
                 Boolean.valueOf(mArgs.getIsWkt2()), mArgs.getGeometryFields2().split(","), mArgs.getSeparator2(),
                 mArgs.getCrs2(), mArgs.getCharset2(), mArgs.getGeometryType2());
 
         log.info("Prepare calculation");
         if (!mArgs.getCrs().equals(mArgs.getCrs1())) {
-            targetLayer = targetLayer.project(CrsUtil.getByCode(mArgs.getCrs()));
+            layer1 = layer1.project(CrsUtil.getByCode(mArgs.getCrs()));
         }
         if (!mArgs.getCrs().equals(mArgs.getCrs2())) {
-            extentLayer = extentLayer.project(CrsUtil.getByCode(mArgs.getCrs()));
+            layer2 = layer2.project(CrsUtil.getByCode(mArgs.getCrs()));
         }
-        targetLayer = targetLayer.index(14);
-        extentLayer = extentLayer.index(14);
+        layer1 = layer1.index(14);
+        layer2 = layer2.index(14);
 
         log.info("Start Calculation");
-        Layer layer = intersection(targetLayer, extentLayer);
+        Layer layer = intersection(layer1, layer2);
 
         log.info("Output result");
         LayerTextFileWriter writer = new LayerTextFileWriter("", mArgs.getOutput());
-        writer.writeToFileByPartCollect(layer);
+        writer.writeToFileByPartCollect(layer, Boolean.parseBoolean(mArgs.getNeedHeader()), false, true);
 
         ss.close();
     }
@@ -66,7 +66,7 @@ public class Intersection {
         int dimension1 = GeometryUtil.getDimensionOfGeomType(metadata1.getGeometryType());
         int dimension2 = GeometryUtil.getDimensionOfGeomType(metadata2.getGeometryType());
         int dimension = Math.min(dimension1, dimension2);
-        String[] fieldNames = FieldUtil.mergeFields(metadata1.getFieldNames(), metadata2.getFieldNames());
+        String[] fieldNames = FieldUtil.merge(metadata1.getFieldNames(), metadata2.getFieldNames());
         JavaPairRDD<String, Feature> result = tarIndLayer.join(extIndLayer)
                 .mapToPair(pairItems -> {
                     Feature targetFeature = pairItems._2()._1();
@@ -76,7 +76,7 @@ public class Intersection {
                     Feature feature = null;
                     if (geoTarget.intersects(geoExtent)) {
                         String fid = targetFeature.getFid() + "#" + extentFeature.getFid();
-                        LinkedHashMap<String, Object> attributes = FieldUtil.mergeAttributes(fieldNames, targetFeature.getAttributes(), extentFeature.getAttributes());
+                        LinkedHashMap<String, Object> attributes = AttributeUtil.merge(fieldNames, targetFeature.getAttributes(), extentFeature.getAttributes());
                         Geometry inter = geoExtent.intersection(geoTarget);
                         inter = GeometryUtil.breakGeometryCollectionByDimension(inter, dimension);
                         feature = new Feature(fid, attributes, inter);

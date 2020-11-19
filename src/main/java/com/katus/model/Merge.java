@@ -72,13 +72,13 @@ public class Merge {
         String[] fieldNames = FieldUtil.mergeFields(metadata1.getFieldNames(), metadata2.getFieldNames());
         JavaPairRDD<String, Feature> result1 = layer1.mapToPair(pairItem -> {
             Feature feature = pairItem._2();
-            LinkedHashMap<String, Object> attributes = FieldUtil.mergeAttributes(fieldNames, feature.getAttributes(), new HashMap<>());
+            LinkedHashMap<String, Object> attributes = AttributeUtil.mergeAttributes(fieldNames, feature.getAttributes(), new HashMap<>());
             feature.setAttributes(attributes);
             return new Tuple2<>(pairItem._1(), feature);
         });
         JavaPairRDD<String, Feature> result2 = layer2.mapToPair(pairItem -> {
             Feature feature = pairItem._2();
-            LinkedHashMap<String, Object> attributes = FieldUtil.mergeAttributes(fieldNames, new HashMap<>(), feature.getAttributes());
+            LinkedHashMap<String, Object> attributes = AttributeUtil.mergeAttributes(fieldNames, new HashMap<>(), feature.getAttributes());
             feature.setAttributes(attributes);
             return new Tuple2<>(pairItem._1(), feature);
         });

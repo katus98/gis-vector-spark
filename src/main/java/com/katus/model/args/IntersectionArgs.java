@@ -9,7 +9,7 @@ import org.kohsuke.args4j.Option;
 
 /**
  * @author Keran Sun (katus)
- * @version 1.0, 2020-11-17
+ * @version 2.0, 2020-11-19
  */
 @Getter
 @Setter
@@ -17,6 +17,9 @@ import org.kohsuke.args4j.Option;
 public class IntersectionArgs {
     @Option(name = "-output", usage = "输出文件路径", required = true)
     private String output;
+
+    @Option(name = "-needHeader", usage = "输出文件是否含有标题行")
+    private String needHeader = "true";   // false, true
 
     @Option(name = "-crs", usage = "运算过程的地理参考")
     private String crs = "4326";   // 4326, 3857
@@ -35,7 +38,7 @@ public class IntersectionArgs {
     @Option(name = "-geometryFields1", usage = "输入目标数据几何列")
     private String geometryFields1 = "-1";   // separate by ","
 
-    @Option(name = "-geometryType1", usage = "输入目标数据几何列")
+    @Option(name = "-geometryType1", usage = "输入目标数据几何类型")
     private String geometryType1 = "LineString";   // Polygon, LineString, Point
 
     @Option(name = "-separator1", usage = "输入目标数据分隔符")
@@ -61,7 +64,7 @@ public class IntersectionArgs {
     @Option(name = "-geometryFields2", usage = "输入范围数据几何列")
     private String geometryFields2 = "-1";   // separate by ","
 
-    @Option(name = "-geometryType2", usage = "输入目标数据几何列")
+    @Option(name = "-geometryType2", usage = "输入目标数据几何类型")
     private String geometryType2 = "LineString";   // Polygon, LineString, Point
 
     @Option(name = "-separator2", usage = "输入范围数据分隔符")

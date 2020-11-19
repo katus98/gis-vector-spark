@@ -83,17 +83,17 @@ public class SymmetricalDifference {
                     LinkedHashMap<String, Object> attributes1, attributes2;
                     Feature feature1 = null, feature2 = null;
                     if (tarFeature != null && extFeature != null) {
-                        attributes1 = FieldUtil.mergeAttributes(fieldNames, tarFeature.getAttributes(), new HashMap<>());
-                        attributes2 = FieldUtil.mergeAttributes(fieldNames, new HashMap<>(), extFeature.getAttributes());
+                        attributes1 = AttributeUtil.mergeAttributes(fieldNames, tarFeature.getAttributes(), new HashMap<>());
+                        attributes2 = AttributeUtil.mergeAttributes(fieldNames, new HashMap<>(), extFeature.getAttributes());
                         feature1 = new Feature(tarFeature.getFid(), attributes1, tarFeature.getGeometry().difference(extFeature.getGeometry()));
                         feature2 = new Feature(extFeature.getFid(), attributes2, extFeature.getGeometry().difference(tarFeature.getGeometry()));
                     } else {
                         if (tarFeature != null) {
-                            attributes1 = FieldUtil.mergeAttributes(fieldNames, tarFeature.getAttributes(), new HashMap<>());
+                            attributes1 = AttributeUtil.mergeAttributes(fieldNames, tarFeature.getAttributes(), new HashMap<>());
                             feature1 = new Feature(tarFeature.getFid(), attributes1, tarFeature.getGeometry());
                         }
                         if (extFeature != null) {
-                            attributes2 = FieldUtil.mergeAttributes(fieldNames, new HashMap<>(), extFeature.getAttributes());
+                            attributes2 = AttributeUtil.mergeAttributes(fieldNames, new HashMap<>(), extFeature.getAttributes());
                             feature2 = new Feature(extFeature.getFid(), attributes2, extFeature.getGeometry());
                         }
                     }

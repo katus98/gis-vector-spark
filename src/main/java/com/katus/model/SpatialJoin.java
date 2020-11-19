@@ -7,10 +7,7 @@ import com.katus.entity.Layer;
 import com.katus.entity.LayerMetadata;
 import com.katus.io.writer.LayerTextFileWriter;
 import com.katus.model.args.SpatialJoinArgs;
-import com.katus.util.CrsUtil;
-import com.katus.util.FieldUtil;
-import com.katus.util.InputUtil;
-import com.katus.util.SparkUtil;
+import com.katus.util.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.sql.SparkSession;
@@ -77,14 +74,14 @@ public class SpatialJoin {
                 .mapToPair(leftPairItems -> {
                     Feature tarFeature = leftPairItems._2()._1();
                     String key = tarFeature.getFid() + "#-";
-                    LinkedHashMap<String, Object> attributes = FieldUtil.mergeAttributes(fieldNames, tarFeature.getAttributes(), new HashMap<>());
+                    LinkedHashMap<String, Object> attributes = AttributeUtil.mergeAttributes(fieldNames, tarFeature.getAttributes(), new HashMap<>());
                     if (leftPairItems._2()._2().isPresent()) {
                         Feature joinFeature = leftPairItems._2()._2().get();
                         Method spatialMethod = Geometry.class.getMethod(relationship.getMethodName(), Geometry.class);
                         Boolean isSatisfied = (Boolean) spatialMethod.invoke(tarFeature.getGeometry(), joinFeature.getGeometry());
                         if (isSatisfied) {
                             key = tarFeature.getFid() + "#+";
-                            attributes = FieldUtil.mergeAttributes(fieldNames, tarFeature.getAttributes(), joinFeature.getAttributes());
+                            attributes = AttributeUtil.mergeAttributes(fieldNames, tarFeature.getAttributes(), joinFeature.getAttributes());
                         }
                     }
                     tarFeature.setAttributes(attributes);
