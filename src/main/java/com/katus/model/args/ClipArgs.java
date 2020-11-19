@@ -35,7 +35,7 @@ public class ClipArgs {
     @Option(name = "-geometryFields1", usage = "输入目标数据几何列")
     private String geometryFields1 = "-1";   // separate by ","
 
-    @Option(name = "-geometryType1", usage = "输入目标数据几何列")
+    @Option(name = "-geometryType1", usage = "输入目标数据几何类型")
     private String geometryType1 = "LineString";   // Polygon, LineString, Point
 
     @Option(name = "-separator1", usage = "输入目标数据分隔符")
@@ -61,7 +61,7 @@ public class ClipArgs {
     @Option(name = "-geometryFields2", usage = "输入范围数据几何列")
     private String geometryFields2 = "-1";   // separate by ","
 
-    @Option(name = "-geometryType2", usage = "输入目标数据几何列")
+    @Option(name = "-geometryType2", usage = "输入目标数据几何类型")
     private String geometryType2 = "LineString";   // Polygon, LineString, Point
 
     @Option(name = "-separator2", usage = "输入范围数据分隔符")

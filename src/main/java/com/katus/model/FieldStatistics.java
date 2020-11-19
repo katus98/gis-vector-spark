@@ -124,7 +124,7 @@ public class FieldStatistics {
         } else {
             result = result.cache();
         }
-        return layer;
+        return Layer.create(result, fieldNames, metadata.getCrs(), "None", result.count());
     }
 
     private static boolean checkArgs(String[] categoryFields, List<String> summaryFields, List<NumberType> numberTypes, String[] fields) {
