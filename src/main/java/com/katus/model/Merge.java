@@ -9,14 +9,12 @@ import com.katus.util.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.sql.SparkSession;
-import scala.Tuple2;
 
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 
 /**
  * @author Keran Sun (katus)
- * @version 1.0, 2020-11-18
+ * @version 2.0, 2020-11-19
  */
 @Slf4j
 public class Merge {
@@ -61,7 +59,7 @@ public class Merge {
 
         log.info("Output result");
         LayerTextFileWriter writer = new LayerTextFileWriter("", mArgs.getOutput());
-        writer.writeToFileByPartCollect(layer);
+        writer.writeToFileByPartCollect(layer, Boolean.parseBoolean(mArgs.getNeedHeader()), false, true);
 
         ss.close();
     }
@@ -69,18 +67,16 @@ public class Merge {
     public static Layer merge(Layer layer1, Layer layer2) {
         LayerMetadata metadata1 = layer1.getMetadata();
         LayerMetadata metadata2 = layer2.getMetadata();
-        String[] fieldNames = FieldUtil.mergeFields(metadata1.getFieldNames(), metadata2.getFieldNames());
+        String[] fieldNames = FieldUtil.merge(metadata1.getFieldNames(), metadata2.getFieldNames());
         JavaPairRDD<String, Feature> result1 = layer1.mapToPair(pairItem -> {
             Feature feature = pairItem._2();
-            LinkedHashMap<String, Object> attributes = AttributeUtil.mergeAttributes(fieldNames, feature.getAttributes(), new HashMap<>());
-            feature.setAttributes(attributes);
-            return new Tuple2<>(pairItem._1(), feature);
+            feature.setAttributes(AttributeUtil.merge(fieldNames, feature.getAttributes(), new HashMap<>()));
+            return pairItem;
         });
         JavaPairRDD<String, Feature> result2 = layer2.mapToPair(pairItem -> {
             Feature feature = pairItem._2();
-            LinkedHashMap<String, Object> attributes = AttributeUtil.mergeAttributes(fieldNames, new HashMap<>(), feature.getAttributes());
-            feature.setAttributes(attributes);
-            return new Tuple2<>(pairItem._1(), feature);
+            feature.setAttributes(AttributeUtil.merge(fieldNames, new HashMap<>(), feature.getAttributes()));
+            return pairItem;
         });
         JavaPairRDD<String, Feature> result = result1.union(result2).cache();
         return Layer.create(result, fieldNames, metadata1.getCrs(), metadata1.getGeometryType(), result.count());
