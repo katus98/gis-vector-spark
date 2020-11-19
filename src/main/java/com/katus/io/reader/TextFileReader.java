@@ -79,10 +79,12 @@ public class TextFileReader implements Serializable {
     }
 
     private void initGeometryFields(int fieldLength) {
-        for (int i = 0; i < geometryFields.length; i++) {
-            int index = Integer.parseInt(geometryFields[i]);
-            if (index < 0) {
-                this.geometryFields[i] = String.valueOf(fieldLength + index);
+        if (!hasHeader) {
+            for (int i = 0; i < geometryFields.length; i++) {
+                int index = Integer.parseInt(geometryFields[i]);
+                if (index < 0) {
+                    this.geometryFields[i] = String.valueOf(fieldLength + index);
+                }
             }
         }
     }
