@@ -66,5 +66,18 @@ A framework for basic parallel model of geographic vector data based on Apache S
 -separator2 \t
 -crs2 4326
 -charset2 UTF-8
+# MultiToSingle
+-output /D:/Data/mts.csv
+-needHeader true
+-crs 4326
+-input /D:/Data/target.shp
+-ratio 0.5
+-hasHeader false
+-isWkt true
+-geometryFields -1
+-geometryType LineString
+-separator \t
+-crs 4326
+-charset UTF-8
 ```
 
