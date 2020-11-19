@@ -17,7 +17,7 @@ import scala.Tuple2;
 
 /**
  * @author Keran Sun (katus)
- * @version 1.0, 2020-11-16
+ * @version 2.0, 2020-11-19
  */
 @Slf4j
 public class Clip {
@@ -63,7 +63,7 @@ public class Clip {
 
         log.info("Output result");
         LayerTextFileWriter writer = new LayerTextFileWriter("", mArgs.getOutput());
-        writer.writeToFileByPartCollect(layer);
+        writer.writeToFileByPartCollect(layer, Boolean.parseBoolean(mArgs.getNeedHeader()), false, true);
 
         ss.close();
     }
