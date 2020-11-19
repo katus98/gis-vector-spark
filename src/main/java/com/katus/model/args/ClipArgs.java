@@ -9,7 +9,7 @@ import org.kohsuke.args4j.Option;
 
 /**
  * @author Keran Sun (katus)
- * @version 1.0, 2020-11-16
+ * @version 2.0, 2020-11-19
  */
 @Getter
 @Setter
