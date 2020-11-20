@@ -18,6 +18,9 @@ import org.kohsuke.args4j.Option;
 public class FieldJoinArgs {
     @Option(name = "-output", usage = "输出文件路径", required = true)
     private String output;
+
+    @Option(name = "-needHeader", usage = "输出文件是否含有标题行")
+    private String needHeader = "true";   // false, true
     /**
      * @see JoinType
      */

@@ -51,7 +51,7 @@ public class FieldJoin {
 
         log.info("Output result");
         LayerTextFileWriter writer = new LayerTextFileWriter("", mArgs.getOutput());
-        writer.writeToFileByPartCollect(layer);
+        writer.writeToFileByPartCollect(layer, Boolean.parseBoolean(mArgs.getNeedHeader()), false, true);
 
         ss.close();
     }
@@ -59,22 +59,24 @@ public class FieldJoin {
     public static Layer fieldJoin(Layer targetLayer, Layer joinLayer, JoinType joinType, String[] joinFields1, String[] joinFields2) {
         LayerMetadata metadata1 = targetLayer.getMetadata();
         LayerMetadata metadata2 = joinLayer.getMetadata();
-        String[] fieldNames = FieldUtil.mergeFields(metadata1.getFieldNames(), metadata2.getFieldNames());
+        String[] fieldNames = FieldUtil.merge(metadata1.getFieldNames(), metadata2.getFieldNames());
         int fieldNum = Math.min(joinFields1.length, joinFields2.length);
         JavaPairRDD<String, Feature> result1 = targetLayer.mapToPair(pairItem -> {
             Feature feature = pairItem._2();
-            StringBuilder builder = new StringBuilder();
+            StringBuilder builder = new StringBuilder("Join:");
             for (int i = 0; i < fieldNum; i++) {
-                builder.append(feature.getAttribute(joinFields1[i])).append("#");
+                builder.append(feature.getAttribute(joinFields1[i])).append(",");
             }
+            if (fieldNum > 0) builder.deleteCharAt(builder.length() - 1);
             return new Tuple2<>(builder.toString(), feature);
         });
         JavaPairRDD<String, Feature> result2 = joinLayer.mapToPair(pairItem -> {
             Feature feature = pairItem._2();
-            StringBuilder builder = new StringBuilder();
+            StringBuilder builder = new StringBuilder("Join:");
             for (int i = 0; i < fieldNum; i++) {
-                builder.append(feature.getAttribute(joinFields2[i])).append("#");
+                builder.append(feature.getAttribute(joinFields2[i])).append(",");
             }
+            if (fieldNum > 0) builder.deleteCharAt(builder.length() - 1);
             return new Tuple2<>(builder.toString(), feature);
         });
         JavaPairRDD<String, Feature> result = result1.leftOuterJoin(result2)
@@ -83,9 +85,9 @@ public class FieldJoin {
                     LinkedHashMap<String, Object> attributes;
                     if (leftPairItems._2()._2().isPresent()) {
                         Feature joinFeature = leftPairItems._2()._2().get();
-                        attributes = AttributeUtil.mergeAttributes(fieldNames, tarFeature.getAttributes(), joinFeature.getAttributes());
+                        attributes = AttributeUtil.merge(fieldNames, tarFeature.getAttributes(), joinFeature.getAttributes());
                     } else {
-                        attributes = AttributeUtil.mergeAttributes(fieldNames, tarFeature.getAttributes(), new HashMap<>());
+                        attributes = AttributeUtil.merge(fieldNames, tarFeature.getAttributes(), new HashMap<>());
                     }
                     tarFeature.setAttributes(attributes);
                     return new Tuple2<>(tarFeature.getFid(), tarFeature);
