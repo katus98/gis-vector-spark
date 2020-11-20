@@ -59,16 +59,16 @@ public class AttributeUtil {
                 String key = summaryFields.get(i) + statisticalMethod.getFieldNamePostfix();
                 switch (statisticalMethod) {
                     case COUNT:
-                        attributes.put(key + "(LONG)", 1L);
+                        attributes.put(key + "(LONG)", 5L);
                         break;
                     case MAIN:
                         attributes.put(key + "(DOUBLE)", 1.0);
                         break;
                     default:
                         if (numberTypes.get(i).getIsDecimal()) {
-                            attributes.put(key + "(DOUBLE)", Double.parseDouble((String) oriAttr.get(summaryFields.get(i))));
+                            attributes.put(key + "(DOUBLE)", Double.parseDouble(oriAttr.get(summaryFields.get(i)).toString()));
                         } else {
-                            attributes.put(key + "(LONG)", Long.parseLong((String) oriAttr.get(summaryFields.get(i))));
+                            attributes.put(key + "(LONG)", Long.parseLong(oriAttr.get(summaryFields.get(i)).toString()));
                         }
                         break;
                 }
@@ -84,6 +84,10 @@ public class AttributeUtil {
         while (it1.hasNext() && it2.hasNext()) {
             Map.Entry<String, Object> entry1 = it1.next();
             Map.Entry<String, Object> entry2 = it2.next();
+            if (!entry1.getKey().contains("_")) {
+                attributes.put(entry1.getKey(), entry1.getValue());
+                continue;
+            }
             if (summaryFields.contains(entry1.getKey().substring(0, entry1.getKey().lastIndexOf("_")))) {
                 NumberType numberType = NumberType.getByFieldName(entry1.getKey());
                 StatisticalMethod statisticalMethod = StatisticalMethod.getByFieldName(entry1.getKey());
@@ -91,11 +95,11 @@ public class AttributeUtil {
                 switch (statisticalMethod) {
                     case SUM:
                         result = numberType.equals(NumberType.LONG) ?
-                                ((Long) entry1.getValue()) + ((Long) entry2.getValue()) :
-                                ((Double) entry1.getValue()) + ((Double) entry2.getValue());
+                                ((Number) entry1.getValue()).longValue() + ((Number) entry2.getValue()).longValue() :
+                                ((Number) entry1.getValue()).doubleValue() + ((Number) entry2.getValue()).doubleValue();
                         break;
                     case COUNT:
-                        result = ((Long) entry1.getValue()) + ((Long) entry2.getValue());
+                        result = ((Number) entry1.getValue()).longValue() + ((Number) entry2.getValue()).longValue();
                         break;
                     case MAXIMUM:
                         result = max((Number) entry1.getValue(), (Number) entry2.getValue());
@@ -109,8 +113,6 @@ public class AttributeUtil {
                         break;
                 }
                 attributes.put(entry1.getKey(), result);
-            } else {
-                attributes.put(entry1.getKey(), entry1.getValue());
             }
         }
         return attributes;

@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 /**
  * @author Keran Sun (katus)
- * @version 1.0, 2020-11-19
+ * @version 2.0, 2020-11-19
  */
 @Slf4j
 public class FieldStatistics {
@@ -70,7 +70,7 @@ public class FieldStatistics {
 
         log.info("Output result");
         LayerTextFileWriter writer = new LayerTextFileWriter("", mArgs.getOutput());
-        writer.writeToFileByPartCollect(layer, true, false, false);
+        writer.writeToFileByPartCollect(layer, Boolean.parseBoolean(mArgs.getNeedHeader()), false, false);
 
         ss.close();
     }
@@ -81,15 +81,11 @@ public class FieldStatistics {
         JavaPairRDD<String, Feature> result = layer
                 .mapToPair(pairItem -> {
                     Feature feature = pairItem._2();
-                    StringBuilder keyBuilder = new StringBuilder();
-                    if (categoryFields[0].trim().isEmpty()) {
-                        keyBuilder.append("1");
-                    } else {
-                        for (String categoryField : categoryFields) {
-                            keyBuilder.append(feature.getAttribute(categoryField)).append(",");
-                        }
-                        keyBuilder.deleteCharAt(keyBuilder.length() - 1);
+                    StringBuilder keyBuilder = new StringBuilder("Statistics:");
+                    for (String categoryField : categoryFields) {
+                        keyBuilder.append(feature.getAttribute(categoryField)).append(",");
                     }
+                    keyBuilder.deleteCharAt(keyBuilder.length() - 1);
                     LinkedHashMap<String, Object> attributes = AttributeUtil.initStatistics(feature.getAttributes(), categoryFields, summaryFields, numberTypes, statisticalMethods);
                     feature.setAttributes(attributes);
                     feature.setGeometry(null);
@@ -116,8 +112,8 @@ public class FieldStatistics {
                 Feature feature = pairItem._2();
                 LinkedHashMap<String, Object> attributes = feature.getAttributes();
                 for (String summaryField : summaryFields) {
-                    long count = (Long) attributes.get(summaryField + StatisticalMethod.COUNT.getFieldNamePostfix());
-                    double sum = (Double) attributes.get(summaryField + StatisticalMethod.SUM.getFieldNamePostfix());
+                    long count = ((Number) attributes.get(summaryField + StatisticalMethod.COUNT.getFieldNamePostfix())).longValue();
+                    double sum = ((Number) attributes.get(summaryField + StatisticalMethod.SUM.getFieldNamePostfix())).doubleValue();
                     attributes.put(summaryField + StatisticalMethod.MAIN.getFieldNamePostfix(), 1.0 * sum / count);
                 }
                 return pairItem;
@@ -134,13 +130,13 @@ public class FieldStatistics {
         if (summaryFields.size() != numberTypes.size()) result = false;
         List<String> fieldList = Arrays.asList(fields);
         for (String categoryField : categoryFields) {
-            if (fieldList.contains(categoryField)) {
+            if (!fieldList.contains(categoryField)) {
                 result = false;
                 break;
             }
         }
         for (String summaryField : summaryFields) {
-            if (fieldList.contains(summaryField)) {
+            if (!fieldList.contains(summaryField)) {
                 result = false;
                 break;
             }
