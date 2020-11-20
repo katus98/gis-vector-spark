@@ -11,7 +11,7 @@ import org.kohsuke.args4j.Option;
 
 /**
  * @author Keran Sun (katus)
- * @version 1.0, 2020-11-18
+ * @version 2.0, 2020-11-19
  */
 @Getter
 @Setter
@@ -19,6 +19,9 @@ import org.kohsuke.args4j.Option;
 public class SpatialJoinArgs {
     @Option(name = "-output", usage = "输出文件路径", required = true)
     private String output;
+
+    @Option(name = "-needHeader", usage = "输出文件是否含有标题行")
+    private String needHeader = "true";   // false, true
 
     @Option(name = "-crs", usage = "输出结果的地理参考")
     private String crs = "4326";   // 4326, 3857

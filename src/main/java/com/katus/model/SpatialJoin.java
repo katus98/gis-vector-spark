@@ -20,7 +20,7 @@ import java.util.LinkedHashMap;
 
 /**
  * @author Keran Sun (katus)
- * @version 1.0, 2020-11-18
+ * @version 2.0, 2020-11-19
  */
 @Slf4j
 public class SpatialJoin {
@@ -61,7 +61,7 @@ public class SpatialJoin {
 
         log.info("Output result");
         LayerTextFileWriter writer = new LayerTextFileWriter("", mArgs.getOutput());
-        writer.writeToFileByPartCollect(layer);
+        writer.writeToFileByPartCollect(layer, Boolean.parseBoolean(mArgs.getNeedHeader()), false, true);
 
         ss.close();
     }
@@ -69,23 +69,22 @@ public class SpatialJoin {
     public static Layer spatialJoin(Layer targetLayer, Layer joinLayer, JoinType joinType, SpatialRelationship relationship) {
         LayerMetadata metadata1 = targetLayer.getMetadata();
         LayerMetadata metadata2 = joinLayer.getMetadata();
-        String[] fieldNames = FieldUtil.mergeFields(metadata1.getFieldNames(), metadata2.getFieldNames());
+        String[] fieldNames = FieldUtil.merge(metadata1.getFieldNames(), metadata2.getFieldNames());
         JavaPairRDD<String, Feature> tempResult = targetLayer.leftOuterJoin(joinLayer)
                 .mapToPair(leftPairItems -> {
                     Feature tarFeature = leftPairItems._2()._1();
                     String key = tarFeature.getFid() + "#-";
-                    LinkedHashMap<String, Object> attributes = AttributeUtil.mergeAttributes(fieldNames, tarFeature.getAttributes(), new HashMap<>());
+                    LinkedHashMap<String, Object> attributes = AttributeUtil.merge(fieldNames, tarFeature.getAttributes(), new HashMap<>());
                     if (leftPairItems._2()._2().isPresent()) {
                         Feature joinFeature = leftPairItems._2()._2().get();
                         Method spatialMethod = Geometry.class.getMethod(relationship.getMethodName(), Geometry.class);
                         Boolean isSatisfied = (Boolean) spatialMethod.invoke(tarFeature.getGeometry(), joinFeature.getGeometry());
                         if (isSatisfied) {
                             key = tarFeature.getFid() + "#+";
-                            attributes = AttributeUtil.mergeAttributes(fieldNames, tarFeature.getAttributes(), joinFeature.getAttributes());
+                            attributes = AttributeUtil.merge(fieldNames, tarFeature.getAttributes(), joinFeature.getAttributes());
                         }
                     }
-                    tarFeature.setAttributes(attributes);
-                    return new Tuple2<>(key, tarFeature);
+                    return new Tuple2<>(key, new Feature(tarFeature.getFid(), attributes, tarFeature.getGeometry()));
                 })
                 .cache();
         JavaPairRDD<String, Feature> joined = tempResult
