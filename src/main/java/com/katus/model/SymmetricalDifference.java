@@ -19,7 +19,7 @@ import java.util.List;
 
 /**
  * @author Keran Sun (katus)
- * @version 2.0, 2020-11-19
+ * @version 1.0, 2020-11-19
  */
 @Slf4j
 public class SymmetricalDifference {

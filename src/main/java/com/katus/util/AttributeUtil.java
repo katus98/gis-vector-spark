@@ -10,7 +10,7 @@ import java.util.Map;
 
 /**
  * @author Keran Sun (katus)
- * @version 2.0, 2020-11-19
+ * @version 1.0, 2020-11-19
  */
 public class AttributeUtil {
     public static LinkedHashMap<String, Object> merge(String[] fieldNames, Map<String, Object> attr1, Map<String, Object> attr2) {

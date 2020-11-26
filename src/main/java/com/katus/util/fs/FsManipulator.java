@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * File System Manipulator
  * @author Keran Sun (katus)
- * @version 1.1, 2020-09-29
+ * @version 1.0, 2020-09-29
  */
 public abstract class FsManipulator implements Closeable {
     protected final FileSystem fs;

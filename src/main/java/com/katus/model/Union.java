@@ -19,7 +19,7 @@ import java.util.List;
 
 /**
  * @author Mengxiao Wang (wmx), Keran Sun (katus)
- * @version 2.0, 2020-11-24
+ * @version 1.0, 2020-11-24
  */
 @Slf4j
 public class Union {

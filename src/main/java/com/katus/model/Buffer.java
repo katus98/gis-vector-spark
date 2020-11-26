@@ -15,7 +15,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * @author Mengxiao Wang (wmx), Keran Sun (katus)
- * @version 2.0, 2020-11-20
+ * @version 1.0, 2020-11-20
  */
 @Slf4j
 public class Buffer {
