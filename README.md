@@ -5,32 +5,32 @@ A framework for basic parallel model of geographic vector data based on Apache S
 
 ### Geo Processing
 
-- [ ] Buffer
-- [x] Clip
-- [x] Convex Hull
-- [x] Dissolve
-- [x] Erase
-- [x] Intersection
-- [x] Symmetrical Difference
-- [ ] Union
+- [x] Buffer (v1.0)
+- [x] Clip (v1.0)
+- [x] Convex Hull (v1.0)
+- [x] Dissolve (v1.0)
+- [x] Erase (v1.0)
+- [x] Intersection (v1.0)
+- [x] Symmetrical Difference (v1.0)
+- [x] Union (v1.0)
 
 ### Geometry Tools
 
-- [x] Multi Part To Single Parts (Multi To Single)
+- [x] Multi Part To Single Parts (Multi To Single) (v1.0)
 - [ ] Polygons To Lines
 - [ ] Lines To Polygons
 
 ### Field Tools
 
 - [x] Field Selector
-  - [x] Field Text Selector
-  - [x] Field Numerical Selector
-- [x] Field Statistics
-- [x] Field Join
+  - [x] Field Text Selector (v1.0)
+  - [x] Field Numerical Selector (v1.0)
+- [x] Field Statistics (v1.0)
+- [x] Field Join (v1.0)
 
 ### Research Tools
 
-- [x] Random Selection
+- [x] Random Selection (v1.0)
 
 ### Analysis Tools
 
@@ -38,8 +38,8 @@ A framework for basic parallel model of geographic vector data based on Apache S
 
 ### Data Management Tools
 
-- [x] Merge
-- [x] Spatial Join
+- [x] Merge (v1.0)
+- [x] Spatial Join (v1.0)
 
 ## User Manual
 
@@ -81,3 +81,13 @@ A framework for basic parallel model of geographic vector data based on Apache S
 -charset UTF-8
 ```
 
+## Contributors
+
+### Project Manager
+
++ Keran Sun (katus)
+
+### Model Author
+
++ Keran Sun (katus)
++ Mengxiao Wang (wmx)
