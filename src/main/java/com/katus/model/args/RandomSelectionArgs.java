@@ -9,7 +9,7 @@ import org.kohsuke.args4j.Option;
 
 /**
  * @author Keran Sun (katus)
- * @version 1.0, 2020-11-19
+ * @version 1.1, 2020-11-28
  */
 @Getter
 @Setter
@@ -19,7 +19,7 @@ public class RandomSelectionArgs {
     private String output;
 
     @Option(name = "-needHeader", usage = "输出文件是否含有标题行")
-    private String needHeader = "true";   // false, true
+    private String needHeader = "true";   // true, false
 
     @Option(name = "-input", usage = "输入目标数据路径", required = true)
     private String input;
@@ -30,13 +30,13 @@ public class RandomSelectionArgs {
      * The below is only for text file
      */
     @Option(name = "-hasHeader", usage = "输入目标数据是否含有标题行")
-    private String hasHeader = "false";   // false, true
+    private String hasHeader = "true";   // true, false
 
     @Option(name = "-isWkt", usage = "输入目标数据几何列是否是WKT")
     private String isWkt = "true";   // true, false
 
     @Option(name = "-geometryFields", usage = "输入目标数据几何列")
-    private String geometryFields = "-1";   // separate by ","
+    private String geometryFields = "wkt";   // separate by ","
 
     @Option(name = "-geometryType", usage = "输入目标数据几何类别")
     private String geometryType = "LineString";   // Polygon, LineString, Point

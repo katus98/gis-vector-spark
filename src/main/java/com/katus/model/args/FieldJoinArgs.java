@@ -10,7 +10,7 @@ import org.kohsuke.args4j.Option;
 
 /**
  * @author Keran Sun (katus)
- * @version 1.0, 2020-11-18
+ * @version 1.1, 2020-11-28
  */
 @Getter
 @Setter
@@ -20,7 +20,7 @@ public class FieldJoinArgs {
     private String output;
 
     @Option(name = "-needHeader", usage = "输出文件是否含有标题行")
-    private String needHeader = "true";   // false, true
+    private String needHeader = "true";   // true, false
     /**
      * @see JoinType
      */
@@ -36,13 +36,13 @@ public class FieldJoinArgs {
      * The below is only for text file
      */
     @Option(name = "-hasHeader1", usage = "输入目标数据是否含有标题行")
-    private String hasHeader1 = "false";   // false, true
+    private String hasHeader1 = "true";   // true, false
 
     @Option(name = "-isWkt1", usage = "输入目标数据几何列是否是WKT")
     private String isWkt1 = "true";   // true, false
 
     @Option(name = "-geometryFields1", usage = "输入目标数据几何列")
-    private String geometryFields1 = "-1";   // separate by ","
+    private String geometryFields1 = "wkt";   // separate by ","
 
     @Option(name = "-geometryType1", usage = "输入目标数据几何类型")
     private String geometryType1 = "LineString";   // Polygon, LineString, Point
@@ -65,13 +65,13 @@ public class FieldJoinArgs {
      * The below is only for text file
      */
     @Option(name = "-hasHeader2", usage = "输入范围数据是否含有标题行")
-    private String hasHeader2 = "false";   // false, true
+    private String hasHeader2 = "true";   // true, false
 
     @Option(name = "-isWkt2", usage = "输入范围数据几何列是否是WKT")
     private String isWkt2 = "true";   // true, false
 
     @Option(name = "-geometryFields2", usage = "输入范围数据几何列")
-    private String geometryFields2 = "-1";   // separate by ","
+    private String geometryFields2 = "wkt";   // separate by ","
 
     @Option(name = "-geometryType2", usage = "输入目标数据几何类型")
     private String geometryType2 = "LineString";   // Polygon, LineString, Point

@@ -7,7 +7,7 @@
 
     <groupId>com.katus</groupId>
     <artifactId>gis-vector-spark</artifactId>
-    <version>1.0</version>
+    <version>1.1-SNAPSHOT</version>
     <name>GIS Vector Spark Project</name>
     <url>https://github.com/katus98/gis-vector-spark</url>
     <description>A framework for basic parallel model of geographic vector data based on Apache Spark.</description>
