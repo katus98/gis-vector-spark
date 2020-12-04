@@ -32,7 +32,7 @@ A framework for basic parallel model of geographic vector data based on Apache S
 
 ### Field Tools
 
-- [ ] Field Join (v1.0)
+- [x] Field Join (v1.0)
 - [x] Field Selector
   - [x] Field Numerical Selector (v1.0)
   - [x] Field Text Selector (v1.0)
@@ -59,7 +59,7 @@ A framework for basic parallel model of geographic vector data based on Apache S
 ### Data Management Tools
 
 - [x] Merge (v1.0)
-- [ ] Reproject
+- [x] Project
 - [x] Spatial Join (v1.0)
 - [ ] Split
 
