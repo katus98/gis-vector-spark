@@ -63,6 +63,24 @@ A framework for basic parallel model of geographic vector data based on Apache S
 - [x] Spatial Join (v1.0)
 - [ ] Split
 
+## GIS Vector Data IO
+
+### Data Input
+
+- [x] ESRI Shape File
+- [x] Relational Database
+  - [x] MySQL Database
+  - [x] PostgreSQL Database
+- [x] Text File
+
+### Data Output
+
+- [ ] ESRI Shape File
+- [ ] Relational Database
+  - [ ] MySQL Database
+  - [ ] PostgreSQL Database
+- [x] Text File
+
 ## User Manual
 
 ### Example of program arguments

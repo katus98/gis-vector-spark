@@ -37,7 +37,8 @@
         <scala.version>2.11</scala.version>
         <lombok.version>1.18.16</lombok.version>
         <junit.version>4.13.1</junit.version>
-        <pg.version>42.2.18</pg.version>
+        <mysql.version>8.0.22</mysql.version>
+        <postgresql.version>42.2.18</postgresql.version>
     </properties>
 
     <repositories>
@@ -122,11 +123,18 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>${mysql.version}</version>
+        </dependency>
+
         <!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>${pg.version}</version>
+            <version>${postgresql.version}</version>
         </dependency>
     </dependencies>
 

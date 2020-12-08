@@ -13,6 +13,10 @@ public class PostgreSQLReader extends RelationalDatabaseReader {
         super(url, tables, "org.postgresql.Driver", "postgres", "postgres");
     }
 
+    public PostgreSQLReader(String url, String[] tables, String username, String password) {
+        super(url, tables, "org.postgresql.Driver", username, password);
+    }
+
     public PostgreSQLReader(String url, String[] tables, String username, String password, String idField) {
         super(url, tables, "org.postgresql.Driver", username, password, idField);
     }
