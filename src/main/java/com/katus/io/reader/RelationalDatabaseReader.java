@@ -25,7 +25,7 @@ public abstract class RelationalDatabaseReader implements Serializable {
     protected String driver;
     protected String username;
     protected String password;
-    protected String idField;
+    protected String serialField;
     protected String[] geometryFields;
     protected String crs;
     protected Boolean isWkt;
@@ -45,21 +45,21 @@ public abstract class RelationalDatabaseReader implements Serializable {
         this(url, tables, driver, username, password, "");
     }
 
-    protected RelationalDatabaseReader(String url, String[] tables, String driver, String username, String password, String idField) {
-        this(url, tables, driver, username, password, idField, new String[0], "4326");
+    protected RelationalDatabaseReader(String url, String[] tables, String driver, String username, String password, String serialField) {
+        this(url, tables, driver, username, password, serialField, new String[0], "4326");
     }
 
-    protected RelationalDatabaseReader(String url, String[] tables, String driver, String username, String password, String idField, String[] geometryFields, String crs) {
-        this(url, tables, driver, username, password, idField, geometryFields, crs, true, "LineString");
+    protected RelationalDatabaseReader(String url, String[] tables, String driver, String username, String password, String serialField, String[] geometryFields, String crs) {
+        this(url, tables, driver, username, password, serialField, geometryFields, crs, true, "LineString");
     }
 
-    protected RelationalDatabaseReader(String url, String[] tables, String driver, String username, String password, String idField, String[] geometryFields, String crs, Boolean isWkt, String geometryType) {
+    protected RelationalDatabaseReader(String url, String[] tables, String driver, String username, String password, String serialField, String[] geometryFields, String crs, Boolean isWkt, String geometryType) {
         this.url = url;
         this.tables = tables;
         this.driver = driver;
         this.username = username;
         this.password = password;
-        this.idField = idField;
+        this.serialField = serialField;
         this.geometryFields = geometryFields;
         this.crs = crs;
         this.isWkt = isWkt;
@@ -86,14 +86,14 @@ public abstract class RelationalDatabaseReader implements Serializable {
                 .option("continueBatchOnError", continueBatchOnError)
                 .option("pushDownPredicate", pushDownPredicate) // 默认请求下推
                 .load();
-        if (idField == null || idField.isEmpty()) return prefetch;
-        Row[] bounds = (Row[]) prefetch.selectExpr("min(" + idField + ") as min", "max(" + idField + ") as max").collect();
+        if (serialField == null || serialField.isEmpty()) return prefetch;
+        Row[] bounds = (Row[]) prefetch.selectExpr("min(" + serialField + ") as min", "max(" + serialField + ") as max").collect();
         return ss.read()
                 .format("jdbc")
                 .option("url", url)
                 .option("dbtable", table)
                 .option("driver", driver)
-                .option("partitionColumn", idField)
+                .option("partitionColumn", serialField)
                 .option("lowerBound", ((Number) bounds[0].get(0)).longValue())
                 .option("upperBound", ((Number) bounds[0].get(1)).longValue())
                 .option("user", username)

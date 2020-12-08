@@ -9,7 +9,7 @@ import org.kohsuke.args4j.Option;
 
 /**
  * @author Keran Sun (katus)
- * @version 1.1, 2020-11-28
+ * @version 1.2, 2020-12-08
  */
 @Getter
 @Setter
@@ -27,7 +27,7 @@ public class EraseArgs {
     @Option(name = "-input1", usage = "输入目标数据路径", required = true)
     private String input1;
     /**
-     * The below is only for text file
+     * The below is only for specific inputs, not always takes effect.
      */
     @Option(name = "-hasHeader1", usage = "输入目标数据是否含有标题行")
     private String hasHeader1 = "true";   // true, false
@@ -50,10 +50,13 @@ public class EraseArgs {
     @Option(name = "-charset1", usage = "输入目标数据字符集")
     private String charset1 = "UTF-8";   // UTF-8, GBK
 
+    @Option(name = "-serialField1", usage = "输入目标数据顺序自增字段")
+    private String serialField1 = "";
+
     @Option(name = "-input2", usage = "输入范围数据路径", required = true)
     private String input2;
     /**
-     * The below is only for text file
+     * The below is only for specific inputs, not always takes effect.
      */
     @Option(name = "-hasHeader2", usage = "输入范围数据是否含有标题行")
     private String hasHeader2 = "true";   // true, false
@@ -75,6 +78,9 @@ public class EraseArgs {
 
     @Option(name = "-charset2", usage = "输入范围数据字符集")
     private String charset2 = "UTF-8";   // UTF-8, GBK
+
+    @Option(name = "-serialField2", usage = "输入范围数据顺序自增字段")
+    private String serialField2 = "";
 
     public static EraseArgs initArgs(String[] args) {
         EraseArgs mArgs = new EraseArgs();

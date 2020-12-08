@@ -9,7 +9,7 @@ import org.kohsuke.args4j.Option;
 
 /**
  * @author Keran Sun (katus)
- * @version 1.1, 2020-11-28
+ * @version 1.2, 2020-12-08
  */
 @Getter
 @Setter
@@ -24,7 +24,7 @@ public class MultiToSingleArgs {
     @Option(name = "-input", usage = "输入目标数据路径", required = true)
     private String input;
     /**
-     * The below is only for text file
+     * The below is only for specific inputs, not always takes effect.
      */
     @Option(name = "-hasHeader", usage = "输入目标数据是否含有标题行")
     private String hasHeader = "true";   // true, false
@@ -46,6 +46,9 @@ public class MultiToSingleArgs {
 
     @Option(name = "-charset", usage = "输入目标数据字符集")
     private String charset = "UTF-8";   // UTF-8, GBK
+
+    @Option(name = "-serialField", usage = "输入目标数据顺序自增字段")
+    private String serialField = "";
 
     public static MultiToSingleArgs initArgs(String[] args) {
         MultiToSingleArgs mArgs = new MultiToSingleArgs();

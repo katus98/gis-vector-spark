@@ -12,7 +12,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * @author Keran Sun (katus)
- * @version 1.1, 2020-12-02
+ * @version 1.2, 2020-12-08
  */
 @Slf4j
 public class Project {
@@ -31,7 +31,7 @@ public class Project {
         log.info("Make layers");
         Layer targetLayer = InputUtil.makeLayer(ss, mArgs.getInput(), Boolean.valueOf(mArgs.getHasHeader()),
                 Boolean.valueOf(mArgs.getIsWkt()), mArgs.getGeometryFields().split(","), mArgs.getSeparator(),
-                mArgs.getCrs(), mArgs.getCharset(), mArgs.getGeometryType());
+                mArgs.getCrs(), mArgs.getCharset(), mArgs.getGeometryType(), mArgs.getSerialField());
 
         log.info("Start Calculation");
         CoordinateReferenceSystem tarCrs = CrsUtil.getByCode(mArgs.getTargetCrs());

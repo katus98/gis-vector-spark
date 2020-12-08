@@ -9,23 +9,19 @@ import lombok.Getter;
  */
 @Getter
 public class PostgreSQLReader extends RelationalDatabaseReader {
-    public PostgreSQLReader(String url, String[] tables) {
-        super(url, tables, "org.postgresql.Driver", "postgres", "postgres");
-    }
-
     public PostgreSQLReader(String url, String[] tables, String username, String password) {
         super(url, tables, "org.postgresql.Driver", username, password);
     }
 
-    public PostgreSQLReader(String url, String[] tables, String username, String password, String idField) {
-        super(url, tables, "org.postgresql.Driver", username, password, idField);
+    public PostgreSQLReader(String url, String[] tables, String username, String password, String serialField) {
+        super(url, tables, "org.postgresql.Driver", username, password, serialField);
     }
 
-    public PostgreSQLReader(String url, String[] tables, String username, String password, String idField, String[] geometryFields, String crs) {
-        super(url, tables, "org.postgresql.Driver", username, password, idField, geometryFields, crs);
+    public PostgreSQLReader(String url, String[] tables, String username, String password, String serialField, String[] geometryFields, String crs) {
+        super(url, tables, "org.postgresql.Driver", username, password, serialField, geometryFields, crs);
     }
 
-    public PostgreSQLReader(String url, String[] tables, String username, String password, String idField, String[] geometryFields, String crs, Boolean isWkt, String geometryType) {
-        super(url, tables, "org.postgresql.Driver", username, password, idField, geometryFields, crs, isWkt, geometryType);
+    public PostgreSQLReader(String url, String[] tables, String username, String password, String serialField, String[] geometryFields, String crs, Boolean isWkt, String geometryType) {
+        super(url, tables, "org.postgresql.Driver", username, password, serialField, geometryFields, crs, isWkt, geometryType);
     }
 }
