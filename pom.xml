@@ -37,6 +37,7 @@
         <scala.version>2.11</scala.version>
         <lombok.version>1.18.16</lombok.version>
         <junit.version>4.13.1</junit.version>
+        <pg.version>42.2.18</pg.version>
     </properties>
 
     <repositories>
@@ -119,6 +120,13 @@
             <artifactId>junit</artifactId>
             <version>${junit.version}</version>
             <scope>test</scope>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${pg.version}</version>
         </dependency>
     </dependencies>
 
