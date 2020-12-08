@@ -17,7 +17,7 @@ import java.util.Properties;
 
 /**
  * @author Keran Sun (katus)
- * @version 1.0, 2020-11-16
+ * @version 1.1, 2020-12-08
  */
 @Slf4j
 public final class InputUtil {
@@ -37,18 +37,18 @@ public final class InputUtil {
         if (sourceUri.startsWith("jdbc:")) {
             Properties connectionProp = new Properties();
             String dbType = source.substring(5, source.indexOf("://")).toLowerCase();
-            InputStream is = InputUtil.class.getResourceAsStream(dbType + ".properties");
+            InputStream is = InputUtil.class.getResourceAsStream("/db.properties");
             connectionProp.load(is);
             String[] tables = source.substring(sourceUri.length() + 1).split(",");
             RelationalDatabaseReader rdbReader;
             switch (dbType) {
                 case "mysql":
-                    rdbReader = new MySQLReader(sourceUri, tables, connectionProp.getProperty("user"),
-                            connectionProp.getProperty("password"), serialField, geometryFields, crs, isWkt, geometryType);
+                    rdbReader = new MySQLReader(sourceUri, tables, connectionProp.getProperty(dbType + ".user"),
+                            connectionProp.getProperty(dbType + ".password"), serialField, geometryFields, crs, isWkt, geometryType);
                     break;
                 case "postgresql":
-                    rdbReader = new PostgreSQLReader(sourceUri, tables, connectionProp.getProperty("user"),
-                            connectionProp.getProperty("password"), serialField, geometryFields, crs, isWkt, geometryType);
+                    rdbReader = new PostgreSQLReader(sourceUri, tables, connectionProp.getProperty(dbType + ".user"),
+                            connectionProp.getProperty(dbType + ".password"), serialField, geometryFields, crs, isWkt, geometryType);
                     break;
                 default:
                     String msg = "Database: " + dbType + " Not Support!";
