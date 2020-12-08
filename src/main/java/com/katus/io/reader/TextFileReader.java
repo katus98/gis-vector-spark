@@ -88,15 +88,4 @@ public class TextFileReader implements Serializable {
             }
         }
     }
-
-    public static int isGeomField(String fieldName, String[] geometryFields) {
-        int index = -1;
-        for (int i = 0; i < geometryFields.length; i++) {
-            if (geometryFields[i].equals(fieldName)) {
-                index = i;
-                break;
-            }
-        }
-        return index;
-    }
 }
