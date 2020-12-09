@@ -86,7 +86,7 @@ public abstract class RelationalDatabaseReader implements Serializable {
                 .option("continueBatchOnError", continueBatchOnError)
                 .option("pushDownPredicate", pushDownPredicate) // 默认请求下推
                 .load();
-        if (serialField == null || serialField.isEmpty()) return prefetch;
+        if (serialField == null || serialField.isEmpty() || serialField.equals("-")) return prefetch;
         Row[] bounds = (Row[]) prefetch.selectExpr("min(" + serialField + ") as min", "max(" + serialField + ") as max").collect();
         return ss.read()
                 .format("jdbc")
