@@ -53,9 +53,9 @@ public class TextFileLayerGenerator extends LayerGenerator implements Serializab
                     WKTReader wktReader = new WKTReader();
                     if (reader.getIsWkt()) {   // wkt
                         geometry = wktReader.read(geom[0]);
-                    } else if (reader.getFieldNames().length == 2) {   // lat, lon
+                    } else if (reader.getGeometryFields().length == 2) {   // lat, lon
                         geometry = wktReader.read(String.format("POINT (%s %s)", geom[0], geom[1]));
-                    } else if (reader.getFieldNames().length == 4) {   // OD: sLat, sLon, eLat, eLon
+                    } else if (reader.getGeometryFields().length == 4) {   // OD: sLat, sLon, eLat, eLon
                         geometry = wktReader.read(String.format("LINESTRING (%s %s,%s %s)", geom[0], geom[1], geom[2], geom[3]));
                     } else {   // Coordinate of points in one field. Need geometry type, default LineString.
                         if (reader.getGeometryType().equalsIgnoreCase("Polygon")) {
