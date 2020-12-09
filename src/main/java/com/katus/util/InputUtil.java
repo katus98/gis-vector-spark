@@ -26,20 +26,27 @@ public final class InputUtil {
                                   String geometryType, String serialField) throws Exception {
         Layer layer;
         String sourceUri;
+        Properties connectionProp = new Properties();
+        InputStream is = InputUtil.class.getResourceAsStream("/db.properties");
+        connectionProp.load(is);
         if (source.startsWith("file://") || source.startsWith("hdfs://")) {
             sourceUri = source;
         } else if (source.startsWith("jdbc:")) {
             sourceUri = source.substring(0, source.lastIndexOf("/"));
+            source = source.substring(sourceUri.length() + 1);
+        } else if (source.startsWith("postgresql:")) {
+            sourceUri = connectionProp.getProperty("postgresql.url");
+            source = source.substring(11);
+        } else if (source.startsWith("mysql:")) {
+            sourceUri = connectionProp.getProperty("mysql.url");
+            source = source.substring(6);
         } else {
             sourceUri = "file://" + source;
         }
         LayerGenerator generator;
         if (sourceUri.startsWith("jdbc:")) {
-            Properties connectionProp = new Properties();
-            String dbType = source.substring(5, source.indexOf("://")).toLowerCase();
-            InputStream is = InputUtil.class.getResourceAsStream("/db.properties");
-            connectionProp.load(is);
-            String[] tables = source.substring(sourceUri.length() + 1).split(",");
+            String dbType = sourceUri.substring(5, sourceUri.indexOf("://")).toLowerCase();
+            String[] tables = source.split(",");
             RelationalDatabaseReader rdbReader;
             switch (dbType) {
                 case "mysql":
