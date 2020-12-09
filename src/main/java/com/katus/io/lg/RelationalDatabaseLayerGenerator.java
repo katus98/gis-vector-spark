@@ -1,10 +1,10 @@
 package com.katus.io.lg;
 
-import com.katus.constant.GeomConstant;
 import com.katus.entity.Feature;
 import com.katus.entity.Layer;
 import com.katus.io.reader.RelationalDatabaseReader;
 import com.katus.util.CrsUtil;
+import com.katus.util.GeometryUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.sql.Dataset;
@@ -12,7 +12,6 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.util.LongAccumulator;
 import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.io.WKTReader;
 import org.opengis.referencing.FactoryException;
 import scala.Tuple2;
 
@@ -46,29 +45,7 @@ public class RelationalDatabaseLayerGenerator extends LayerGenerator implements 
                         for (int i = 0; i < geometryFields.length; i++) {
                             geom[i] = row.getString(row.fieldIndex(geometryFields[i]));
                         }
-                        Geometry geometry;
-                        WKTReader wktReader = new WKTReader();
-                        switch (geom.length) {
-                            case 1:
-                                if (reader.getIsWkt()) {
-                                    geometry = wktReader.read(geom[0]);
-                                } else {
-                                    if (reader.getGeometryType().equalsIgnoreCase("Polygon")) {
-                                        geometry = wktReader.read(String.format("POLYGON ((%s))", geom[0]));
-                                    } else {
-                                        geometry = wktReader.read(String.format("%s (%s)", reader.getGeometryType().toUpperCase(), geom[0]));
-                                    }
-                                }
-                                break;
-                            case 2:
-                                geometry = wktReader.read(String.format("POINT (%s %s)", geom[0], geom[1]));
-                                break;
-                            case 4:
-                                geometry = wktReader.read(String.format("LINESTRING (%s %s,%s %s)", geom[0], geom[1], geom[2], geom[3]));
-                                break;
-                            default:
-                                geometry = GeomConstant.EMPTY_GEOM;
-                        }
+                        Geometry geometry = GeometryUtil.getGeometryFromText(geom, reader.getIsWkt(), reader.getGeometryType());
                         Feature feature = new Feature(geometry);
                         for (String fieldName : fieldNames) {
                             feature.setAttribute(fieldName, row.get(row.fieldIndex(fieldName)));
@@ -83,7 +60,7 @@ public class RelationalDatabaseLayerGenerator extends LayerGenerator implements 
                 .cache();
         long featureCount = features.count();
         log.warn("Data Item Error: " + dataItemErrorCount.count());
-        String geometryType = features.first()._2().getGeometry().getGeometryType();
+        String geometryType = featureCount > 0 ? features.first()._2().getGeometry().getGeometryType() : "EMPTY";
         reader.setGeometryType(geometryType);
         return Layer.create(features, reader.getFieldNames(), CrsUtil.getByCode(reader.getCrs()), geometryType, featureCount);
     }

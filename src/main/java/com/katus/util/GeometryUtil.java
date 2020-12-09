@@ -4,13 +4,14 @@ import com.katus.constant.GeomConstant;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.io.ParseException;
+import org.locationtech.jts.io.WKTReader;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author Keran Sun (katus)
- * @version 1.0, 2020-11-17
+ * @version 1.1, 2020-12-09
  */
 public final class GeometryUtil {
     public static int getDimensionOfGeomType(String geometryType) {
@@ -59,5 +60,32 @@ public final class GeometryUtil {
             unionGeom = geometry;
         }
         return unionGeom;
+    }
+
+    public static Geometry getGeometryFromText(String[] text, Boolean isWkt, String geometryType) throws ParseException {
+        WKTReader wktReader = new WKTReader();
+        Geometry geometry;
+        switch (text.length) {
+            case 1:
+                if (isWkt) {   // wkt
+                    geometry = wktReader.read(text[0]);
+                } else {   // Coordinate of points in one field. Need geometry type, default LineString.
+                    if (geometryType.equalsIgnoreCase("Polygon")) {
+                        geometry = wktReader.read(String.format("POLYGON ((%s))", text[0]));
+                    } else {
+                        geometry = wktReader.read(String.format("%s (%s)", geometryType.toUpperCase(), text[0]));
+                    }
+                }
+                break;
+            case 2:   // lat, lon
+                geometry = wktReader.read(String.format("POINT (%s %s)", text[0], text[1]));
+                break;
+            case 4:   // OD: sLat, sLon, eLat, eLon
+                geometry = wktReader.read(String.format("LINESTRING (%s %s,%s %s)", text[0], text[1], text[2], text[3]));
+                break;
+            default:
+                geometry = GeomConstant.EMPTY_GEOM;
+        }
+        return geometry;
     }
 }
