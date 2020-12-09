@@ -48,8 +48,9 @@ public class ShapeFileLayerGenerator extends LayerGenerator {
                     feature.setAttribute("geometryType", type);
                     result.add(new Tuple2<>("###INFO###", feature));
                     return result.iterator();
-                }).repartition(jsc.defaultParallelism());
-        featuresWithInfo.cache();
+                })
+                .repartition(jsc.defaultParallelism())
+                .cache();
         long featureCount = featuresWithInfo.count() - 1;
         Map<String, Object> attributes = featuresWithInfo.filter(pairItem -> pairItem._1().equals("###INFO###")).collect().get(0)._2().getAttributes();
         JavaPairRDD<String, Feature> features = featuresWithInfo.filter(pairItem -> !pairItem._1().equals("###INFO###"));
