@@ -7,7 +7,7 @@
 
     <groupId>com.katus</groupId>
     <artifactId>gis-vector-spark</artifactId>
-    <version>1.1.0-NGIC</version>
+    <version>1.1.0_ngic</version>
     <name>GIS Vector Spark Project</name>
     <url>https://github.com/katus98/gis-vector-spark</url>
     <description>A framework for basic parallel model of geographic vector data based on Apache Spark.</description>
@@ -33,7 +33,7 @@
         <maven.compiler>3.8.1</maven.compiler>
         <gt.version>24.0</gt.version>
         <hadoop.version>2.7.3</hadoop.version>
-        <spark.version>2.3.4</spark.version>
+        <spark.version>2.3.0</spark.version>
         <scala.version>2.11</scala.version>
         <lombok.version>1.18.16</lombok.version>
         <junit.version>4.13.1</junit.version>
