@@ -21,7 +21,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * @author Keran Sun (katus)
+ * @author Sun Katus
  * @version 1.1, 2020-12-09
  */
 @Slf4j

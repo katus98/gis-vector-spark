@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author Keran Sun (katus)
+ * @author Sun Katus
  * @version 1.1, 2020-12-09
  */
 public final class GeometryUtil {

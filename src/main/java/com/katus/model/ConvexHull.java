@@ -14,7 +14,7 @@ import org.locationtech.jts.geom.Geometry;
 import scala.Tuple2;
 
 /**
- * @author Keran Sun (katus)
+ * @author Sun Katus
  * @version 1.1, 2020-12-08
  */
 @Slf4j

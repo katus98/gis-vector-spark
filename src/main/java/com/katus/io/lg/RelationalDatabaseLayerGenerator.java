@@ -19,7 +19,7 @@ import java.io.Serializable;
 import java.util.Objects;
 
 /**
- * @author Keran Sun (katus)
+ * @author Sun Katus
  * @version 1.1, 2020-12-09
  * @since 1.1
  */

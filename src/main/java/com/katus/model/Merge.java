@@ -13,7 +13,7 @@ import org.apache.spark.sql.SparkSession;
 import java.util.HashMap;
 
 /**
- * @author Keran Sun (katus)
+ * @author Sun Katus
  * @version 1.1, 2020-12-08
  */
 @Slf4j

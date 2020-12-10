@@ -8,7 +8,7 @@ import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 
 /**
- * @author Keran Sun (katus)
+ * @author Sun Katus
  * @version 1.2, 2020-12-08
  */
 @Getter
@@ -22,7 +22,7 @@ public class IntersectionArgs {
     private String needHeader = "true";   // true, false
 
     @Option(name = "-crs", usage = "运算过程与结果的地理参考")
-    private String crs = "4326";   // 4326, 3857
+    private String crs = "4326";
 
     @Option(name = "-input1", usage = "输入数据1路径", required = true)
     private String input1;
@@ -45,7 +45,7 @@ public class IntersectionArgs {
     private String separator1 = "\t";
 
     @Option(name = "-crs1", usage = "输入数据1地理参考")
-    private String crs1 = "4326";   // 4326, 3857
+    private String crs1 = "4326";
 
     @Option(name = "-charset1", usage = "输入数据1字符集")
     private String charset1 = "UTF-8";   // UTF-8, GBK
@@ -74,7 +74,7 @@ public class IntersectionArgs {
     private String separator2 = "\t";
 
     @Option(name = "-crs2", usage = "输入数据2地理参考")
-    private String crs2 = "4326";   // 4326, 3857
+    private String crs2 = "4326";
 
     @Option(name = "-charset2", usage = "输入数据2字符集")
     private String charset2 = "UTF-8";   // UTF-8, GBK

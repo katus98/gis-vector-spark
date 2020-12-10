@@ -1,7 +1,7 @@
 package com.katus.constant;
 
 /**
- * @author Keran Sun (katus)
+ * @author Sun Katus
  * @version 1.0, 2020-11-13
  */
 public final class CrsExtent {

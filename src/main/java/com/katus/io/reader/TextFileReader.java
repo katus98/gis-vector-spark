@@ -10,7 +10,7 @@ import java.io.Serializable;
 import java.nio.charset.Charset;
 
 /**
- * @author Keran Sun (katus)
+ * @author Sun Katus
  * @version 1.0, 2020-11-12
  */
 @Getter

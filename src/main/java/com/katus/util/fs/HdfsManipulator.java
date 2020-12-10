@@ -10,7 +10,7 @@ import java.io.IOException;
 
 /**
  * 分布式文件系统操作类 (HDFS等)
- * @author Keran Sun (katus)
+ * @author Sun Katus
  * @version 1.0, 2020-09-28
  */
 public class HdfsManipulator extends FsManipulator {

@@ -12,7 +12,7 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.sql.SparkSession;
 
 /**
- * @author Keran Sun (katus)
+ * @author Sun Katus
  * @version 1.1, 2020-12-08
  */
 @Slf4j

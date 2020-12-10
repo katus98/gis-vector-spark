@@ -1,7 +1,7 @@
 package com.katus.io.reader;
 
 /**
- * @author Keran Sun (katus)
+ * @author Sun Katus
  * @version 1.0, 2020-12-08
  * @since 1.1
  */

@@ -10,7 +10,7 @@ import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 
 /**
- * @author Keran Sun (katus)
+ * @author Sun Katus
  * @version 1.2, 2020-12-08
  */
 @Getter
@@ -60,7 +60,7 @@ public class FieldStatisticsArgs {
     private String separator = "\t";
 
     @Option(name = "-crs", usage = "输入目标数据地理参考")
-    private String crs = "4326";   // 4326, 3857
+    private String crs = "4326";
 
     @Option(name = "-charset", usage = "输入目标数据字符集")
     private String charset = "UTF-8";   // UTF-8, GBK

@@ -8,7 +8,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * Crs Utils, only support 4326(default), 3857, 4490 and 4528.
- * @author Keran Sun (katus)
+ * @author Sun Katus
  * @version 1.1, 2020-11-12
  */
 @Slf4j

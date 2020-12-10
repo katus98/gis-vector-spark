@@ -3,7 +3,7 @@ package com.katus.io.reader;
 import lombok.Getter;
 
 /**
- * @author Keran Sun (katus)
+ * @author Sun Katus
  * @version 1.0, 2020-12-07
  * @since 1.1
  */

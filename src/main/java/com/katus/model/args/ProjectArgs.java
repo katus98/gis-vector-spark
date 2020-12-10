@@ -8,7 +8,7 @@ import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 
 /**
- * @author Keran Sun (katus)
+ * @author Sun Katus
  * @version 1.2, 2020-12-08
  */
 @Getter
@@ -21,8 +21,8 @@ public class ProjectArgs {
     @Option(name = "-needHeader", usage = "输出文件是否含有标题行")
     private String needHeader = "true";   // true, false
 
-    @Option(name = "-targetCrs", usage = "输入目标数据地理参考", required = true)
-    private String targetCrs;   // 4326, 3857
+    @Option(name = "-targetCrs", usage = "投影结果的地理参考", required = true)
+    private String targetCrs;
 
     @Option(name = "-input", usage = "输入目标数据路径", required = true)
     private String input;
@@ -45,7 +45,7 @@ public class ProjectArgs {
     private String separator = "\t";
 
     @Option(name = "-crs", usage = "输入目标数据地理参考")
-    private String crs = "4326";   // 4326, 3857
+    private String crs = "4326";
 
     @Option(name = "-charset", usage = "输入目标数据字符集")
     private String charset = "UTF-8";   // UTF-8, GBK

@@ -20,7 +20,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * @author Keran Sun (katus)
+ * @author Sun Katus
  * @version 1.1, 2020-12-08
  */
 @Slf4j

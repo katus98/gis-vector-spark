@@ -14,7 +14,7 @@ import org.apache.spark.sql.SparkSession;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
- * @author Mengxiao Wang (wmx), Keran Sun (katus)
+ * @author Mengxiao Wang (wmx), Sun Katus
  * @version 1.1, 2020-12-08
  */
 @Slf4j

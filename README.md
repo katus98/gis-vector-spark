@@ -59,7 +59,7 @@ A framework for basic parallel model of geographic vector data based on Apache S
 ### Data Management Tools
 
 - [x] Merge (v1.0)
-- [x] Project
+- [x] Project (v1.1)
 - [x] Spatial Join (v1.0)
 - [ ] Split
 
@@ -67,11 +67,11 @@ A framework for basic parallel model of geographic vector data based on Apache S
 
 ### Data Input
 
-- [x] ESRI Shape File
+- [x] ESRI Shape File (v1.0)
 - [x] Relational Database
-  - [x] MySQL Database
-  - [x] PostgreSQL Database
-- [x] Text File
+  - [x] MySQL Database (v1.1)
+  - [x] PostgreSQL Database (v1.1)
+- [x] Text File (v1.0)
 
 ### Data Output
 
@@ -79,13 +79,21 @@ A framework for basic parallel model of geographic vector data based on Apache S
 - [ ] Relational Database
   - [ ] MySQL Database
   - [ ] PostgreSQL Database
-- [x] Text File
+- [x] Text File (v1.0)
 
 ## User Manual
 
 ### Example of program arguments
 
 ```shell
+# Buffer
+-output /D:/Data/buffer.csv
+-input postgresql:table
+-distance 50
+-geometryFields WKT
+-crsUnit 3857
+-serialField _id
+
 # Clip
 -output /D:/Data/clip.csv
 -needHeader true
@@ -126,9 +134,9 @@ A framework for basic parallel model of geographic vector data based on Apache S
 
 ### Project Manager
 
-+ Keran Sun (katus)
++ Sun Katus
 
 ### Model Author
 
-+ Keran Sun (katus)
-+ Mengxiao Wang (wmx)
++ Sun Katus
++ Wang Mengxiao (wmx)

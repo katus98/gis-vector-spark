@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * @author Keran Sun (katus)
+ * @author Sun Katus
  * @version 1.0, 2020-11-05
  */
 @Setter

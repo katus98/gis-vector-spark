@@ -9,7 +9,7 @@ import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 
 /**
- * @author Keran Sun (katus)
+ * @author Sun Katus
  * @version 1.2, 2020-12-08
  */
 @Getter
@@ -51,7 +51,7 @@ public class FieldJoinArgs {
     private String separator1 = "\t";
 
     @Option(name = "-crs1", usage = "输入目标数据地理参考")
-    private String crs1 = "4326";   // 4326, 3857
+    private String crs1 = "4326";
 
     @Option(name = "-charset1", usage = "输入目标数据字符集")
     private String charset1 = "UTF-8";   // UTF-8, GBK
@@ -83,7 +83,7 @@ public class FieldJoinArgs {
     private String separator2 = "\t";
 
     @Option(name = "-crs2", usage = "输入范围数据地理参考")
-    private String crs2 = "4326";   // 4326, 3857
+    private String crs2 = "4326";
 
     @Option(name = "-charset2", usage = "输入范围数据字符集")
     private String charset2 = "UTF-8";   // UTF-8, GBK
