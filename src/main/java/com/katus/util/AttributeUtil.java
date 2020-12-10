@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @author Keran Sun (katus)
+ * @author Sun Katus
  * @version 1.0, 2020-11-19
  */
 public class AttributeUtil {

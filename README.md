@@ -3,49 +3,97 @@ A framework for basic parallel model of geographic vector data based on Apache S
 
 ## Basic GIS model
 
-### Geo Processing
+### Geo Processing Tools
 
 - [x] Buffer (v1.0)
 - [x] Clip (v1.0)
 - [x] Convex Hull (v1.0)
 - [x] Dissolve (v1.0)
 - [x] Erase (v1.0)
+- [ ] Enlarge
 - [x] Intersection (v1.0)
 - [x] Symmetrical Difference (v1.0)
 - [x] Union (v1.0)
 
 ### Geometry Tools
 
+- [ ] Centroids
+- [ ] Check Validity
+- [ ] Collect
+- [ ] Delaunay Triangulation
+- [ ] Densify
+- [ ] Extract Vertices
+- [ ] Geometry Calculator
+- [ ] Lines To Polygons
 - [x] Multi Part To Single Parts (Multi To Single) (v1.0)
 - [ ] Polygons To Lines
-- [ ] Lines To Polygons
+- [ ] Simplify
+- [ ] Voronoi Polygons
 
 ### Field Tools
 
-- [x] Field Selector
-  - [x] Field Text Selector (v1.0)
-  - [x] Field Numerical Selector (v1.0)
-- [x] Field Statistics (v1.0)
 - [x] Field Join (v1.0)
+- [x] Field Selector
+  - [x] Field Numerical Selector (v1.0)
+  - [x] Field Text Selector (v1.0)
+- [x] Field Statistics (v1.0)
+- [ ] Unique Values
 
 ### Research Tools
 
+- [ ] Create Grids
+- [ ] Random Points
+  - [ ] Random Points In Extent
+  - [ ] Random Points Inside Polygons
 - [x] Random Selection (v1.0)
+- [ ] Regular Points
 
 ### Analysis Tools
 
+- [ ] Distance Matrix
 - [ ] Feature Spatial Count
+- [ ] Line Intersections
+- [ ] Mean Coordinates
+- [ ] Sum Line Lengths
 
 ### Data Management Tools
 
 - [x] Merge (v1.0)
+- [x] Project (v1.1)
 - [x] Spatial Join (v1.0)
+- [ ] Split
+
+## GIS Vector Data IO
+
+### Data Input
+
+- [x] ESRI Shape File (v1.0)
+- [x] Relational Database
+  - [x] MySQL Database (v1.1)
+  - [x] PostgreSQL Database (v1.1)
+- [x] Text File (v1.0)
+
+### Data Output
+
+- [ ] ESRI Shape File
+- [ ] Relational Database
+  - [ ] MySQL Database
+  - [ ] PostgreSQL Database
+- [x] Text File (v1.0)
 
 ## User Manual
 
 ### Example of program arguments
 
 ```shell
+# Buffer
+-output /D:/Data/buffer.csv
+-input postgresql:table
+-distance 50
+-geometryFields WKT
+-crsUnit 3857
+-serialField _id
+
 # Clip
 -output /D:/Data/clip.csv
 -needHeader true
@@ -66,6 +114,7 @@ A framework for basic parallel model of geographic vector data based on Apache S
 -separator2 \t
 -crs2 4326
 -charset2 UTF-8
+
 # MultiToSingle
 -output /D:/Data/mts.csv
 -needHeader true
@@ -85,9 +134,9 @@ A framework for basic parallel model of geographic vector data based on Apache S
 
 ### Project Manager
 
-+ Keran Sun (katus)
++ Sun Katus
 
 ### Model Author
 
-+ Keran Sun (katus)
-+ Mengxiao Wang (wmx)
++ Sun Katus
++ Wang Mengxiao (wmx)

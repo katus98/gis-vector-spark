@@ -5,7 +5,7 @@ import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 
 /**
- * @author Keran Sun (katus)
+ * @author Sun Katus
  * @version 1.0, 2020-11-18
  */
 public final class GeomConstant {

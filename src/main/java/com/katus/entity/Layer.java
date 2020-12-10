@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * @author Keran Sun (katus)
+ * @author Sun Katus
  * @version 1.0, 2020-11-05
  */
 @Setter
@@ -97,7 +97,7 @@ public class Layer extends JavaPairRDD<String, Feature> implements Serializable 
         return layer;
     }
 
-    public Layer create(JavaPairRDD<String, Feature> javaPairRDD,
+    public static Layer create(JavaPairRDD<String, Feature> javaPairRDD,
                                             String[] fieldNames, CoordinateReferenceSystem crs, String geometryType) {
         return create(javaPairRDD, fieldNames, crs, geometryType, -1L);
     }
@@ -109,14 +109,14 @@ public class Layer extends JavaPairRDD<String, Feature> implements Serializable 
      * @param isIndexed true if the layer is indexed
      * @return new layer
      */
-    public Layer create(JavaPairRDD<String, Feature> javaPairRDD, LayerMetadata metadata, Boolean isIndexed) {
+    public static Layer create(JavaPairRDD<String, Feature> javaPairRDD, LayerMetadata metadata, Boolean isIndexed) {
         Layer layer = new Layer(javaPairRDD);
         layer.setMetadata(metadata);
         layer.setIsIndexed(isIndexed);
         return layer;
     }
 
-    public Layer create(JavaPairRDD<String, Feature> javaPairRDD, LayerMetadata metadata) {
-        return this.create(javaPairRDD, metadata, false);
+    public static Layer create(JavaPairRDD<String, Feature> javaPairRDD, LayerMetadata metadata) {
+        return create(javaPairRDD, metadata, false);
     }
 }

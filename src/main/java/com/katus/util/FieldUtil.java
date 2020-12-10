@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * @author Keran Sun (katus)
+ * @author Sun Katus
  * @version 1.0, 2020-11-17
  */
 public final class FieldUtil {
@@ -51,6 +51,27 @@ public final class FieldUtil {
         for (String summaryField : summaryFields) {
             for (StatisticalMethod statisticalMethod : statisticalMethods) {
                 fields[i++] = summaryField + statisticalMethod.getFieldNamePostfix();
+            }
+        }
+        return fields;
+    }
+
+    public static int indexOfGeomField(String fieldName, String[] geometryFields) {
+        int index = -1;
+        for (int i = 0; i < geometryFields.length; i++) {
+            if (geometryFields[i].equals(fieldName)) {
+                index = i;
+                break;
+            }
+        }
+        return index;
+    }
+
+    public static String[] excludeGeomFields(String[] allFields, String[] geomFields) {
+        String[] fields = new String[allFields.length - geomFields.length];
+        for (int i = 0, j = 0; i < allFields.length; i++) {
+            if (FieldUtil.indexOfGeomField(allFields[i], geomFields) == -1) {
+                fields[j++] = allFields[i];
             }
         }
         return fields;

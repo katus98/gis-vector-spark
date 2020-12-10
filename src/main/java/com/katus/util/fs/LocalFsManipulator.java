@@ -20,7 +20,7 @@ import java.nio.file.Paths;
 
 /**
  * 本地文件系统操作类 (兼容Windows系统和Linux系统)
- * @author Keran Sun (katus)
+ * @author Sun Katus
  * @version 1.0, 2020-09-29
  */
 public class LocalFsManipulator extends FsManipulator {

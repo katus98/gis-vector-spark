@@ -14,12 +14,15 @@ import org.kohsuke.args4j.Option;
 @Getter
 @Setter
 @Slf4j
-public class MultiToSingleArgs {
+public class ProjectArgs {
     @Option(name = "-output", usage = "输出文件路径", required = true)
     private String output;
 
     @Option(name = "-needHeader", usage = "输出文件是否含有标题行")
     private String needHeader = "true";   // true, false
+
+    @Option(name = "-targetCrs", usage = "投影结果的地理参考", required = true)
+    private String targetCrs;
 
     @Option(name = "-input", usage = "输入目标数据路径", required = true)
     private String input;
@@ -50,8 +53,8 @@ public class MultiToSingleArgs {
     @Option(name = "-serialField", usage = "输入目标数据顺序自增字段")
     private String serialField = "";
 
-    public static MultiToSingleArgs initArgs(String[] args) {
-        MultiToSingleArgs mArgs = new MultiToSingleArgs();
+    public static ProjectArgs initArgs(String[] args) {
+        ProjectArgs mArgs = new ProjectArgs();
         CmdLineParser parser = new CmdLineParser(mArgs);
         try {
             parser.parseArgument(args);

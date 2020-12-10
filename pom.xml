@@ -7,7 +7,7 @@
 
     <groupId>com.katus</groupId>
     <artifactId>gis-vector-spark</artifactId>
-    <version>1.0.1</version>
+    <version>1.1.0</version>
     <name>GIS Vector Spark Project</name>
     <url>https://github.com/katus98/gis-vector-spark</url>
     <description>A framework for basic parallel model of geographic vector data based on Apache Spark.</description>
@@ -15,7 +15,7 @@
     <developers>
         <developer>
             <id>katus98</id>
-            <name>Keran Sun</name>
+            <name>Sun Katus</name>
             <email>sunkeran0818@outlook.com</email>
             <roles>
                 <role>Project Manager</role>
@@ -37,6 +37,8 @@
         <scala.version>2.11</scala.version>
         <lombok.version>1.18.16</lombok.version>
         <junit.version>4.13.1</junit.version>
+        <mysql.version>8.0.22</mysql.version>
+        <postgresql.version>42.2.18</postgresql.version>
     </properties>
 
     <repositories>
@@ -119,6 +121,20 @@
             <artifactId>junit</artifactId>
             <version>${junit.version}</version>
             <scope>test</scope>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>${mysql.version}</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${postgresql.version}</version>
         </dependency>
     </dependencies>
 

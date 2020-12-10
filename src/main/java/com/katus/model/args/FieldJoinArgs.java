@@ -9,8 +9,8 @@ import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 
 /**
- * @author Keran Sun (katus)
- * @version 1.1, 2020-11-28
+ * @author Sun Katus
+ * @version 1.2, 2020-12-08
  */
 @Getter
 @Setter
@@ -33,7 +33,7 @@ public class FieldJoinArgs {
     @Option(name = "-joinFields1", usage = "输入目标数据连接字段", required = true)
     private String joinFields1;   // separate by ","
     /**
-     * The below is only for text file
+     * The below is only for specific inputs, not always takes effect.
      */
     @Option(name = "-hasHeader1", usage = "输入目标数据是否含有标题行")
     private String hasHeader1 = "true";   // true, false
@@ -51,10 +51,13 @@ public class FieldJoinArgs {
     private String separator1 = "\t";
 
     @Option(name = "-crs1", usage = "输入目标数据地理参考")
-    private String crs1 = "4326";   // 4326, 3857
+    private String crs1 = "4326";
 
     @Option(name = "-charset1", usage = "输入目标数据字符集")
     private String charset1 = "UTF-8";   // UTF-8, GBK
+
+    @Option(name = "-serialField1", usage = "输入目标数据顺序自增字段")
+    private String serialField1 = "";
 
     @Option(name = "-input2", usage = "输入范围数据路径", required = true)
     private String input2;
@@ -62,7 +65,7 @@ public class FieldJoinArgs {
     @Option(name = "-joinFields2", usage = "输入范围数据连接字段", required = true)
     private String joinFields2;   // separate by ","
     /**
-     * The below is only for text file
+     * The below is only for specific inputs, not always takes effect.
      */
     @Option(name = "-hasHeader2", usage = "输入范围数据是否含有标题行")
     private String hasHeader2 = "true";   // true, false
@@ -80,10 +83,13 @@ public class FieldJoinArgs {
     private String separator2 = "\t";
 
     @Option(name = "-crs2", usage = "输入范围数据地理参考")
-    private String crs2 = "4326";   // 4326, 3857
+    private String crs2 = "4326";
 
     @Option(name = "-charset2", usage = "输入范围数据字符集")
     private String charset2 = "UTF-8";   // UTF-8, GBK
+
+    @Option(name = "-serialField2", usage = "输入范围数据顺序自增字段")
+    private String serialField2 = "";
 
     public static FieldJoinArgs initArgs(String[] args) {
         FieldJoinArgs mArgs = new FieldJoinArgs();

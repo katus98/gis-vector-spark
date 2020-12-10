@@ -4,7 +4,7 @@ import org.apache.hadoop.conf.Configuration;
 
 /**
  * 文件系统操作工厂类
- * @author Keran Sun (katus)
+ * @author Sun Katus
  * @version 1.0, 2020-09-29
  */
 public final class FsManipulatorFactory {

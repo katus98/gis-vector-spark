@@ -10,7 +10,7 @@ import java.io.Serializable;
 import java.nio.charset.Charset;
 
 /**
- * @author Keran Sun (katus)
+ * @author Sun Katus
  * @version 1.0, 2020-11-12
  */
 @Getter
@@ -87,16 +87,5 @@ public class TextFileReader implements Serializable {
                 }
             }
         }
-    }
-
-    public static int isGeomField(String fieldName, String[] geometryFields) {
-        int index = -1;
-        for (int i = 0; i < geometryFields.length; i++) {
-            if (geometryFields[i].equals(fieldName)) {
-                index = i;
-                break;
-            }
-        }
-        return index;
     }
 }

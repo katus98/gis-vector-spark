@@ -16,8 +16,8 @@ import org.apache.spark.sql.SparkSession;
 import java.lang.reflect.Method;
 
 /**
- * @author Keran Sun (katus)
- * @version 1.0, 2020-11-19
+ * @author Sun Katus
+ * @version 1.1, 2020-12-08
  */
 @Slf4j
 public class FieldNumericalSelector {
@@ -36,7 +36,7 @@ public class FieldNumericalSelector {
         log.info("Make layers");
         Layer targetLayer = InputUtil.makeLayer(ss, mArgs.getInput(), Boolean.valueOf(mArgs.getHasHeader()),
                 Boolean.valueOf(mArgs.getIsWkt()), mArgs.getGeometryFields().split(","), mArgs.getSeparator(),
-                mArgs.getCrs(), mArgs.getCharset(), mArgs.getGeometryType());
+                mArgs.getCrs(), mArgs.getCharset(), mArgs.getGeometryType(), mArgs.getSerialField());
 
         log.info("Prepare calculation");
         String selectField = mArgs.getSelectField();

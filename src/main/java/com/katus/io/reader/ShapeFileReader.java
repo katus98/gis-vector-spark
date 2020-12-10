@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 
 /**
- * @author Keran Sun (katus)
+ * @author Sun Katus
  * @version 1.0, 2020-11-04
  */
 @Getter

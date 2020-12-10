@@ -8,8 +8,8 @@ import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 
 /**
- * @author Keran Sun (katus)
- * @version 1.1, 2020-11-28
+ * @author Sun Katus
+ * @version 1.2, 2020-12-08
  */
 @Getter
 @Setter
@@ -27,7 +27,7 @@ public class DissolveArgs {
     @Option(name = "-dissolveFields", usage = "输入目标数据溶解字段")
     private String dissolveFields = "";   // separate by ","
     /**
-     * The below is only for text file
+     * The below is only for specific inputs, not always takes effect.
      */
     @Option(name = "-hasHeader", usage = "输入目标数据是否含有标题行")
     private String hasHeader = "true";   // true, false
@@ -45,10 +45,13 @@ public class DissolveArgs {
     private String separator = "\t";
 
     @Option(name = "-crs", usage = "输入目标数据地理参考")
-    private String crs = "4326";   // 4326, 3857
+    private String crs = "4326";
 
     @Option(name = "-charset", usage = "输入目标数据字符集")
     private String charset = "UTF-8";   // UTF-8, GBK
+
+    @Option(name = "-serialField", usage = "输入目标数据顺序自增字段")
+    private String serialField = "";
 
     public static DissolveArgs initArgs(String[] args) {
         DissolveArgs mArgs = new DissolveArgs();
