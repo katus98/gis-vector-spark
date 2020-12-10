@@ -22,7 +22,7 @@ public class ClipArgs {
     private String needHeader = "true";   // true, false
 
     @Option(name = "-crs", usage = "运算过程与结果的地理参考")
-    private String crs = "4326";
+    private String crs = "4490";
 
     @Option(name = "-input1", usage = "输入目标数据路径", required = true)
     private String input1;
@@ -45,13 +45,13 @@ public class ClipArgs {
     private String separator1 = "\t";
 
     @Option(name = "-crs1", usage = "输入目标数据地理参考")
-    private String crs1 = "4326";
+    private String crs1 = "4490";
 
     @Option(name = "-charset1", usage = "输入目标数据字符集")
-    private String charset1 = "UTF-8";   // UTF-8, GBK
+    private String charset1 = "UTF-8";   // UTF-8, GBK, US-ASCII, ISO-8859-1, UTF-16BE, UTF-16LE, UTF-16
 
     @Option(name = "-serialField1", usage = "输入目标数据顺序自增字段")
-    private String serialField1 = "";
+    private String serialField1 = "_id";
 
     @Option(name = "-input2", usage = "输入范围数据路径", required = true)
     private String input2;
@@ -74,13 +74,13 @@ public class ClipArgs {
     private String separator2 = "\t";
 
     @Option(name = "-crs2", usage = "输入范围数据地理参考")
-    private String crs2 = "4326";
+    private String crs2 = "4490";
 
     @Option(name = "-charset2", usage = "输入范围数据字符集")
-    private String charset2 = "UTF-8";   // UTF-8, GBK
+    private String charset2 = "UTF-8";   // UTF-8, GBK, US-ASCII, ISO-8859-1, UTF-16BE, UTF-16LE, UTF-16
 
     @Option(name = "-serialField2", usage = "输入范围数据顺序自增字段")
-    private String serialField2 = "";
+    private String serialField2 = "_id";
 
     public static ClipArgs initArgs(String[] args) {
         ClipArgs mArgs = new ClipArgs();

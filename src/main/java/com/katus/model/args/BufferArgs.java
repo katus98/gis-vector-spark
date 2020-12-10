@@ -28,7 +28,7 @@ public class BufferArgs {
     private String distance;
 
     @Option(name = "-crsUnit", usage = "缓冲区距离单位对应的坐标参考")
-    private String crsUnit = "";   // default same as crs
+    private String crsUnit = "4528";   // default same as crs
     /**
      * The below is only for specific inputs, not always takes effect.
      */
@@ -48,13 +48,13 @@ public class BufferArgs {
     private String separator = "\t";
 
     @Option(name = "-crs", usage = "输入目标数据地理参考")
-    private String crs = "4326";
+    private String crs = "4490";
 
     @Option(name = "-charset", usage = "输入目标数据字符集")
-    private String charset = "UTF-8";   // UTF-8, GBK
+    private String charset = "UTF-8";   // UTF-8, GBK, US-ASCII, ISO-8859-1, UTF-16BE, UTF-16LE, UTF-16
 
     @Option(name = "-serialField", usage = "输入目标数据顺序自增字段")
-    private String serialField = "";
+    private String serialField = "_id";
 
     public static BufferArgs initArgs(String[] args) {
         BufferArgs mArgs = new BufferArgs();

@@ -32,7 +32,7 @@ public class FieldNumericalSelectorArgs {
      * @see NumberRelationship
      */
     @Option(name = "-numberRelationship", usage = "用于筛选的数值关系")
-    private String numberRelationship = "==";
+    private String numberRelationship = "eq";
     /**
      * @see NumberType
      */
@@ -60,13 +60,13 @@ public class FieldNumericalSelectorArgs {
     private String separator = "\t";
 
     @Option(name = "-crs", usage = "输入目标数据地理参考")
-    private String crs = "4326";
+    private String crs = "4490";
 
     @Option(name = "-charset", usage = "输入目标数据字符集")
-    private String charset = "UTF-8";   // UTF-8, GBK
+    private String charset = "UTF-8";   // UTF-8, GBK, US-ASCII, ISO-8859-1, UTF-16BE, UTF-16LE, UTF-16
 
     @Option(name = "-serialField", usage = "输入目标数据顺序自增字段")
-    private String serialField = "";
+    private String serialField = "_id";
 
     public static FieldNumericalSelectorArgs initArgs(String[] args) {
         FieldNumericalSelectorArgs mArgs = new FieldNumericalSelectorArgs();
