@@ -61,7 +61,7 @@ public class AttributeUtil {
                     case COUNT:
                         attributes.put(key + "(LONG)", 5L);
                         break;
-                    case MAIN:
+                    case MEAN:
                         attributes.put(key + "(DOUBLE)", 1.0);
                         break;
                     default:
@@ -107,7 +107,7 @@ public class AttributeUtil {
                     case MINIMUM:
                         result = min((Number) entry1.getValue(), (Number) entry2.getValue());
                         break;
-                    case MAIN:
+                    case MEAN:
                     default:
                         result = (Number) entry1.getValue();
                         break;
