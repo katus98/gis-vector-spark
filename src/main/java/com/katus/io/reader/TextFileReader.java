@@ -8,6 +8,8 @@ import lombok.Setter;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.charset.Charset;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author Sun Katus
@@ -60,7 +62,7 @@ public class TextFileReader implements Serializable {
 
     private void initFields() {
         try {
-            FsManipulator fsManipulator = FsManipulatorFactory.create();
+            FsManipulator fsManipulator = FsManipulatorFactory.create(fileURI);
             String firstLine = fsManipulator.readToText(fileURI, 1, Charset.forName(charset)).get(0);
             String[] fields = firstLine.split(separator);
             initGeometryFields(fields.length);

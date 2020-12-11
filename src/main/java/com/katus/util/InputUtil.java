@@ -41,7 +41,7 @@ public final class InputUtil {
             sourceUri = connectionProp.getProperty("mysql.url");
             source = source.substring(6);
         } else {
-            sourceUri = source;
+            sourceUri = "file://" + source;
         }
         LayerGenerator generator;
         if (sourceUri.startsWith("jdbc:")) {
