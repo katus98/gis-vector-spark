@@ -54,7 +54,7 @@ public class Layer extends JavaPairRDD<String, Feature> implements Serializable 
      * @param z zoom level
      * @return new indexed layer
      */
-    public Layer index(int z) {
+    public Layer index(int z, boolean clip) {
         Pyramid pyramid = new Pyramid(this.metadata.getCrs(), z);
         Layer layer = new Layer(
                 this.flatMapToPair(pairItem -> {
@@ -67,8 +67,13 @@ public class Layer extends JavaPairRDD<String, Feature> implements Serializable 
                         for (int y = range[2]; y <= range[3]; y++) {
                             Polygon polygon = JTS.toGeometry(pyramid.getTile(x, y));
                             if (polygon.intersects(oriGeom)) {
-                                Geometry interGeometry = polygon.intersection(oriGeom);
-                                Feature feature = new Feature(UUID.randomUUID().toString(), oriFeature.getAttributes(), interGeometry);
+                                Feature feature;
+                                if (clip) {
+                                    Geometry interGeometry = polygon.intersection(oriGeom);
+                                    feature = new Feature(UUID.randomUUID().toString(), oriFeature.getAttributes(), interGeometry);
+                                } else {
+                                    feature = new Feature(oriFeature);
+                                }
                                 result.add(new Tuple2<>(pyramid.getZ() + "-" + x + "-" + y, feature));
                             }
                         }
@@ -82,7 +87,7 @@ public class Layer extends JavaPairRDD<String, Feature> implements Serializable 
     }
 
     public Layer index() {
-        return index(DEFAULT_ZOOM);
+        return index(DEFAULT_ZOOM, true);
     }
 
     /**

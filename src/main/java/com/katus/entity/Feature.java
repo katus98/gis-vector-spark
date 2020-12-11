@@ -1,5 +1,6 @@
 package com.katus.entity;
 
+import com.katus.constant.GeomConstant;
 import lombok.Getter;
 import lombok.Setter;
 import org.geotools.geometry.jts.JTS;
@@ -17,14 +18,20 @@ import java.util.UUID;
 
 /**
  * @author Sun Katus
- * @version 1.0, 2020-11-04
+ * @version 1.1, 2020-12-11
  */
 @Getter
 @Setter
 public class Feature implements Serializable {
+    public static final Feature EMPTY_FEATURE;
+
     private String fid;
     private LinkedHashMap<String, Object> attributes;
     private Geometry geometry;
+
+    static {
+        EMPTY_FEATURE = new Feature("EMPTY_FEATURE", new LinkedHashMap<>(), GeomConstant.EMPTY_GEOM);
+    }
 
     public Feature() {
         this(UUID.randomUUID().toString(), new LinkedHashMap<>());
@@ -36,6 +43,10 @@ public class Feature implements Serializable {
 
     public Feature(Geometry geometry) {
         this(UUID.randomUUID().toString(), new LinkedHashMap<>(), geometry);
+    }
+
+    public Feature(Feature feature) {
+        this(feature.getFid(), feature.getAttributes(), feature.getGeometry());
     }
 
     public Feature(String fid, LinkedHashMap<String, Object> attributes, Geometry geometry) {

@@ -38,6 +38,9 @@ public class GtTest {
     public static void test() {
         Number num = 12L;
         System.out.println(num.getClass());
+        String s = "6.426846485903729E-09";
+        double v = Double.parseDouble(s);
+        System.out.println(v);
     }
 
     public static void testCrs() throws FactoryException {

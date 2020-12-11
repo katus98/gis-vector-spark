@@ -38,14 +38,15 @@ public final class GeometryUtil {
         return getDimensionOfGeomType(geometry.getGeometryType());
     }
 
-    public static Geometry breakGeometryCollectionByDimension(Geometry geometry, int dimension) throws ParseException {
+    public static Geometry breakGeometryCollectionByDimension(Geometry geometry, int dimension) {
         Geometry unionGeom;
         if (getDimensionOfGeomType(geometry) == 3 && !geometry.isEmpty()) {   // GeometryCollection
             GeometryCollection collection = (GeometryCollection) geometry;
             List<Geometry> geometries = new ArrayList<>();
             for (int i = 0; i < collection.getNumGeometries(); i++) {
-                if (getDimensionOfGeomType(collection.getGeometryN(i)) == dimension) {
-                    geometries.add(collection.getGeometryN(i));
+                Geometry geometryN = collection.getGeometryN(i);
+                if (getDimensionOfGeomType(geometryN) == dimension) {
+                    geometries.add(geometryN);
                 }
             }
             if (geometries.isEmpty()) {
