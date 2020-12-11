@@ -23,6 +23,7 @@ import java.util.UUID;
 @Setter
 @Getter
 public class Layer extends JavaPairRDD<String, Feature> implements Serializable {
+    private static final int DEFAULT_ZOOM = 10;
     private LayerMetadata metadata;
     private Boolean isIndexed = false;
 
@@ -78,6 +79,10 @@ public class Layer extends JavaPairRDD<String, Feature> implements Serializable 
         layer.setMetadata(this.getMetadata());
         layer.setIsIndexed(true);
         return layer;
+    }
+
+    public Layer index() {
+        return index(DEFAULT_ZOOM);
     }
 
     /**

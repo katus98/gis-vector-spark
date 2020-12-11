@@ -55,8 +55,8 @@ public class Clip {
         if (!mArgs.getCrs().equals(mArgs.getCrs2())) {
             extentLayer = extentLayer.project(CrsUtil.getByCode(mArgs.getCrs()));
         }
-        targetLayer = targetLayer.index(14);
-        extentLayer = extentLayer.index(14);
+        targetLayer = targetLayer.index();
+        extentLayer = extentLayer.index();
 
         log.info("Start Calculation");
         Layer layer = clip(targetLayer, extentLayer);

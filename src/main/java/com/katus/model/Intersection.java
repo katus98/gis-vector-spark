@@ -47,8 +47,8 @@ public class Intersection {
         if (!mArgs.getCrs().equals(mArgs.getCrs2())) {
             layer2 = layer2.project(CrsUtil.getByCode(mArgs.getCrs()));
         }
-        layer1 = layer1.index(14);
-        layer2 = layer2.index(14);
+        layer1 = layer1.index();
+        layer2 = layer2.index();
 
         log.info("Start Calculation");
         Layer layer = intersection(layer1, layer2);
