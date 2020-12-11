@@ -60,7 +60,7 @@ public class TextFileReader implements Serializable {
 
     private void initFields() {
         try {
-            FsManipulator fsManipulator = FsManipulatorFactory.create(fileURI);
+            FsManipulator fsManipulator = FsManipulatorFactory.create();
             String firstLine = fsManipulator.readToText(fileURI, 1, Charset.forName(charset)).get(0);
             String[] fields = firstLine.split(separator);
             initGeometryFields(fields.length);

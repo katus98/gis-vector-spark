@@ -33,7 +33,7 @@ public abstract class RelationalDatabaseReader implements Serializable {
     protected String geometryType;
     protected String[] fieldNames;
     @Setter
-    protected Integer numPartitions = 16;
+    protected Integer numPartitions = 8;
     @Setter
     protected Integer fetchSize = 2000;
     @Setter

@@ -51,8 +51,8 @@ public class SpatialJoin {
         if (!mArgs.getCrs().equals(mArgs.getCrs2())) {
             joinLayer = joinLayer.project(CrsUtil.getByCode(mArgs.getCrs()));
         }
-        targetLayer = targetLayer.index(14);
-        joinLayer = joinLayer.index(14);
+        targetLayer = targetLayer.index(10);
+        joinLayer = joinLayer.index(10);
         JoinType joinType = JoinType.valueOf(mArgs.getJoinType().trim().toUpperCase());
         SpatialRelationship relationship = SpatialRelationship.valueOf(mArgs.getSpatialRelationship().trim().toUpperCase());
 

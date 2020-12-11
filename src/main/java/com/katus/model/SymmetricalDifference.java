@@ -58,8 +58,8 @@ public class SymmetricalDifference {
         if (!mArgs.getCrs().equals(mArgs.getCrs2())) {
             layer2 = layer2.project(CrsUtil.getByCode(mArgs.getCrs()));
         }
-        layer1 = layer1.index(14);
-        layer2 = layer2.index(14);
+        layer1 = layer1.index(10);
+        layer2 = layer2.index(10);
 
         log.info("Start Calculation");
         Layer layer = symmetricalDifference(layer1, layer2);

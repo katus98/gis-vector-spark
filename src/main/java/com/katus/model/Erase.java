@@ -55,8 +55,8 @@ public class Erase {
         if (!mArgs.getCrs().equals(mArgs.getCrs2())) {
             extentLayer = extentLayer.project(CrsUtil.getByCode(mArgs.getCrs()));
         }
-        targetLayer = targetLayer.index(14);
-        extentLayer = extentLayer.index(14);
+        targetLayer = targetLayer.index(10);
+        extentLayer = extentLayer.index(10);
 
         log.info("Start Calculation");
         Layer layer = erase(targetLayer, extentLayer);

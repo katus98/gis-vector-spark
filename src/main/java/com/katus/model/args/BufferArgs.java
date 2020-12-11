@@ -28,7 +28,7 @@ public class BufferArgs {
     private String distance;
 
     @Option(name = "-crsUnit", usage = "缓冲区距离单位对应的坐标参考")
-    private String crsUnit = "4528";   // default same as crs
+    private String crsUnit = "3857";   // default same as crs
     /**
      * The below is only for specific inputs, not always takes effect.
      */
