@@ -18,8 +18,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 /**
- * @author Mengxiao Wang (wmx), Sun Katus
- * @version 1.1, 2020-12-08
+ * @author Wang Mengxiao (wmx), Sun Katus
+ * @version 1.2, 2020-12-12
  */
 @Slf4j
 public class Union {
@@ -58,8 +58,8 @@ public class Union {
         if (!mArgs.getCrs().equals(mArgs.getCrs2())) {
             layer2 = layer2.project(CrsUtil.getByCode(mArgs.getCrs()));
         }
-        layer1 = layer1.index(10);
-        layer2 = layer2.index(10);
+        layer1 = layer1.index();
+        layer2 = layer2.index();
 
         log.info("Start Calculation");
         Layer layer = union(layer1, layer2);
@@ -72,11 +72,18 @@ public class Union {
     }
 
     public static Layer union(Layer layer1, Layer layer2) {
-        LayerMetadata metadata1 = layer1.getMetadata();
-        LayerMetadata metadata2 = layer2.getMetadata();
+        Layer in = Intersection.intersection(layer1, layer2);
+        Layer out = SymmetricalDifference.symmetricalDifference(layer1, layer2);
+        return Merge.merge(in, out);
+    }
+
+    @Deprecated
+    public static Layer unionWithClippedIndex(Layer indexedLayer1, Layer indexedLayer2) {
+        LayerMetadata metadata1 = indexedLayer1.getMetadata();
+        LayerMetadata metadata2 = indexedLayer2.getMetadata();
         int dimension = GeometryUtil.getDimensionOfGeomType(metadata1.getGeometryType());
         String[] fields = FieldUtil.merge(metadata1.getFieldNames(), metadata2.getFieldNames());
-        JavaPairRDD<String, Feature> result = layer1.fullOuterJoin(layer2)
+        JavaPairRDD<String, Feature> result = indexedLayer1.fullOuterJoin(indexedLayer2)
                 .flatMapToPair(fullPairItems -> {
                     List<Tuple2<String, Feature>> resultList = new ArrayList<>();
                     Feature f1 = null, f2 = null;
@@ -84,7 +91,7 @@ public class Union {
                     if (fullPairItems._2()._1().isPresent()) feature1 = fullPairItems._2()._1().get();
                     if (fullPairItems._2()._2().isPresent()) feature2 = fullPairItems._2()._2().get();
                     if (feature1 != null && feature2 != null && feature1.getGeometry().intersects(feature2.getGeometry())) {
-                        Geometry diff = GeometryUtil.breakGeometryCollectionByDimension(feature2.getGeometry().difference(feature1.getGeometry()), dimension);
+                        Geometry diff = GeometryUtil.breakByDimension(feature2.getGeometry().difference(feature1.getGeometry()), dimension);
                         LinkedHashMap<String, Object> attributes = AttributeUtil.merge(fields, feature1.getAttributes(), feature2.getAttributes());
                         f1 = new Feature(feature1.getFid(), attributes, feature1.getGeometry());
                         if (!diff.isEmpty()) f2 = new Feature(feature2.getFid(), attributes, diff);
@@ -103,15 +110,13 @@ public class Union {
                     return resultList.iterator();
                 })
                 .reduceByKey((feature1, feature2) -> {
-                    if (feature1 == null) return null;
-                    if (feature2 == null) return null;
                     if (feature1.getGeometry().equals(feature2.getGeometry())) return feature1;
                     if (feature1.getGeometry().intersects(feature2.getGeometry())) {
-                        Geometry geometry = GeometryUtil.breakGeometryCollectionByDimension(feature1.getGeometry().intersection(feature2.getGeometry()), dimension);
+                        Geometry geometry = GeometryUtil.breakByDimension(feature1.getGeometry().intersection(feature2.getGeometry()), dimension);
                         return new Feature(feature1.getFid(), feature1.getAttributes(), geometry);
-                    } else return null;
+                    } else return Feature.EMPTY_FEATURE;
                 })
-                .filter(pairItem -> pairItem._2() != null && pairItem._2().hasGeometry())
+                .filter(pairItem -> pairItem._2().hasGeometry())
                 .cache();
         return Layer.create(result, fields, metadata1.getCrs(), metadata1.getGeometryType(), result.count());
     }

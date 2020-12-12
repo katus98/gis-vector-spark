@@ -14,7 +14,7 @@ import java.util.HashMap;
 
 /**
  * @author Sun Katus
- * @version 1.1, 2020-12-08
+ * @version 1.2, 2020-12-12
  */
 @Slf4j
 public class Merge {
@@ -67,7 +67,7 @@ public class Merge {
     public static Layer merge(Layer layer1, Layer layer2) {
         LayerMetadata metadata1 = layer1.getMetadata();
         LayerMetadata metadata2 = layer2.getMetadata();
-        String[] fieldNames = FieldUtil.merge(metadata1.getFieldNames(), metadata2.getFieldNames());
+        String[] fieldNames = FieldUtil.mergeToLeast(metadata1.getFieldNames(), metadata2.getFieldNames());
         JavaPairRDD<String, Feature> result1 = layer1.mapToPair(pairItem -> {
             Feature feature = pairItem._2();
             feature.setAttributes(AttributeUtil.merge(fieldNames, feature.getAttributes(), new HashMap<>()));
