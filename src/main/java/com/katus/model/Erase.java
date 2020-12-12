@@ -17,7 +17,7 @@ import scala.Tuple2;
 
 /**
  * @author Sun Katus
- * @version 1.1, 2020-12-08
+ * @version 1.2, 2020-12-11
  */
 @Slf4j
 public class Erase {
@@ -90,14 +90,24 @@ public class Erase {
                     } else {
                         feature = tarFeature;
                     }
-                    return new Tuple2<>(leftPairItems._1() + "#" + feature.getFid(), feature);
+                    return new Tuple2<>(feature.getFid(), feature);
+                })
+                .reduceByKey((f1, f2) -> {
+                    Geometry geometry1 = f1.getGeometry();
+                    Geometry geometry2 = f2.getGeometry();
+                    if (geometry1.intersects(geometry2)) {
+                        f1.setGeometry(geometry1.intersection(geometry2));
+                        return f1;
+                    } else {
+                        return Feature.EMPTY_FEATURE;
+                    }
                 })
                 .mapToPair(pairItem -> {
                     Feature feature = pairItem._2();
-                    feature.setGeometry(GeometryUtil.breakGeometryCollectionByDimension(feature.getGeometry(), dimension));
+                    feature.setGeometry(GeometryUtil.breakByDimension(feature.getGeometry(), dimension));
                     return new Tuple2<>(pairItem._1(), feature);
                 })
-                .filter(pairItem -> pairItem._2().hasGeometry() && GeometryUtil.getDimensionOfGeomType(pairItem._2().getGeometry()) == dimension)
+                .filter(pairItem -> pairItem._2().hasGeometry())
                 .cache();
         return Layer.create(result, metadata.getFieldNames(), metadata.getCrs(), metadata.getGeometryType(), result.count());
     }

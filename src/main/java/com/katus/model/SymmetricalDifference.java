@@ -19,7 +19,7 @@ import java.util.List;
 
 /**
  * @author Sun Katus
- * @version 1.1, 2020-12-08
+ * @version 1.2, 2020-12-12
  */
 @Slf4j
 public class SymmetricalDifference {
@@ -97,31 +97,19 @@ public class SymmetricalDifference {
                             feature2 = new Feature(extFeature.getFid(), attributes2, extFeature.getGeometry());
                         }
                     }
-                    if (feature1 != null) resultList.add(new Tuple2<>(fullPairItems._1() + "#" + feature1.getFid(), feature1));
-                    if (feature2 != null) resultList.add(new Tuple2<>(fullPairItems._1() + "#" + feature2.getFid(), feature2));
+                    if (feature1 != null) resultList.add(new Tuple2<>(feature1.getFid(), feature1));
+                    if (feature2 != null) resultList.add(new Tuple2<>(feature2.getFid(), feature2));
                     return resultList.iterator();
                 })
-                .filter(pairItem -> pairItem._2().hasGeometry())
                 .reduceByKey((feature1, feature2) -> {
-                    if (feature1 == null || feature2 == null) return null;
-                    feature1.setGeometry(GeometryUtil.breakGeometryCollectionByDimension(feature1.getGeometry(), 2));
-                    feature2.setGeometry(GeometryUtil.breakGeometryCollectionByDimension(feature2.getGeometry(), 2));
-                    if (GeometryUtil.getDimensionOfGeomType(feature1.getGeometry()) != 2) return null;
-                    if (GeometryUtil.getDimensionOfGeomType(feature2.getGeometry()) != 2) return null;
                     if (feature1.getGeometry().intersects(feature2.getGeometry())) {
                         Geometry inter = feature1.getGeometry().intersection(feature2.getGeometry());
-                        return new Feature(feature1.getFid(), feature1.getAttributes(), inter);
+                        return new Feature(feature1.getFid(), feature1.getAttributes(), GeometryUtil.breakByDimension(inter, 2));
                     } else {
-                        return null;
+                        return Feature.EMPTY_FEATURE;
                     }
                 })
-                .filter(pairItem -> pairItem._2() != null)
-                .mapToPair(pairItem -> {
-                    Feature feature = pairItem._2();
-                    feature.setGeometry(GeometryUtil.breakGeometryCollectionByDimension(feature.getGeometry(), 2));
-                    return new Tuple2<>(pairItem._1(), feature);
-                })
-                .filter(pairItem -> pairItem._2().hasGeometry() && GeometryUtil.getDimensionOfGeomType(pairItem._2().getGeometry()) == 2)
+                .filter(pairItem -> pairItem._2().hasGeometry())
                 .cache();
         return Layer.create(result, fieldNames, metadata1.getCrs(), metadata1.getGeometryType(), result.count());
     }

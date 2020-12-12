@@ -16,7 +16,7 @@ import java.util.LinkedHashMap;
 
 /**
  * @author Sun Katus
- * @version 1.1, 2020-12-08
+ * @version 1.2, 2020-12-11
  */
 @Slf4j
 public class Intersection {
@@ -60,30 +60,34 @@ public class Intersection {
         ss.close();
     }
 
-    public static Layer intersection(Layer tarIndLayer, Layer extIndLayer) {
-        LayerMetadata metadata1 = tarIndLayer.getMetadata();
-        LayerMetadata metadata2 = extIndLayer.getMetadata();
+    public static Layer intersection(Layer layer1, Layer layer2) {
+        LayerMetadata metadata1 = layer1.getMetadata();
+        LayerMetadata metadata2 = layer2.getMetadata();
         int dimension1 = GeometryUtil.getDimensionOfGeomType(metadata1.getGeometryType());
         int dimension2 = GeometryUtil.getDimensionOfGeomType(metadata2.getGeometryType());
         int dimension = Math.min(dimension1, dimension2);
         String[] fieldNames = FieldUtil.merge(metadata1.getFieldNames(), metadata2.getFieldNames());
-        JavaPairRDD<String, Feature> result = tarIndLayer.join(extIndLayer)
+        JavaPairRDD<String, Feature> result = layer1.join(layer2)
                 .mapToPair(pairItems -> {
                     Feature targetFeature = pairItems._2()._1();
                     Feature extentFeature = pairItems._2()._2();
                     Geometry geoTarget = targetFeature.getGeometry();
                     Geometry geoExtent = extentFeature.getGeometry();
-                    Feature feature = null;
+                    Feature feature;
+                    String key = "";
                     if (geoTarget.intersects(geoExtent)) {
-                        String fid = targetFeature.getFid() + "#" + extentFeature.getFid();
+                        key = targetFeature.getFid() + "#" + extentFeature.getFid();
                         LinkedHashMap<String, Object> attributes = AttributeUtil.merge(fieldNames, targetFeature.getAttributes(), extentFeature.getAttributes());
                         Geometry inter = geoExtent.intersection(geoTarget);
-                        inter = GeometryUtil.breakGeometryCollectionByDimension(inter, dimension);
-                        feature = new Feature(fid, attributes, inter);
+                        inter = GeometryUtil.breakByDimension(inter, dimension);
+                        feature = new Feature(targetFeature.getFid(), attributes, inter);
+                    } else {
+                        feature = Feature.EMPTY_FEATURE;
                     }
-                    return new Tuple2<>(pairItems._1(), feature);
+                    return new Tuple2<>(key, feature);
                 })
-                .filter(pairItem -> pairItem._2() != null && GeometryUtil.getDimensionOfGeomType(pairItem._2().getGeometry()) == dimension)
+                .filter(pairItem -> pairItem._2().hasGeometry())
+                .reduceByKey((f1, f2) -> f1)
                 .cache();
         return Layer.create(result, fieldNames, metadata1.getCrs(), metadata1.getGeometryType(), result.count());
     }

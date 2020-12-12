@@ -18,7 +18,7 @@ import java.util.UUID;
 
 /**
  * @author Sun Katus
- * @version 1.0, 2020-11-05
+ * @version 1.1, 2020-12-11
  */
 @Setter
 @Getter
@@ -87,7 +87,7 @@ public class Layer extends JavaPairRDD<String, Feature> implements Serializable 
     }
 
     public Layer index() {
-        return index(DEFAULT_ZOOM, true);
+        return index(DEFAULT_ZOOM, false);
     }
 
     /**
