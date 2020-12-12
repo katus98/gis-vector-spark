@@ -30,7 +30,7 @@ public class Feature implements Serializable {
     private Geometry geometry;
 
     static {
-        EMPTY_FEATURE = new Feature("EMPTY_FEATURE", new LinkedHashMap<>(), GeomConstant.EMPTY_GEOM);
+        EMPTY_FEATURE = new Feature("EMPTY_FEATURE", new LinkedHashMap<>(), GeomConstant.EMPTY_GEOMETRY);
     }
 
     public Feature() {
