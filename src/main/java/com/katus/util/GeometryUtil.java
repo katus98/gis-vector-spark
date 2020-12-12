@@ -38,28 +38,54 @@ public final class GeometryUtil {
         return getDimensionOfGeomType(geometry.getGeometryType());
     }
 
-    public static Geometry breakGeometryCollectionByDimension(Geometry geometry, int dimension) throws ParseException {
+    public static Geometry breakByDimension(Geometry geometry, int dimension) {
+        if (geometry.isEmpty()) return geometry;
         Geometry unionGeom;
-        if (getDimensionOfGeomType(geometry) == 3 && !geometry.isEmpty()) {   // GeometryCollection
+        int d = getDimensionOfGeomType(geometry);
+        if (d == 3) {   // GeometryCollection
             GeometryCollection collection = (GeometryCollection) geometry;
             List<Geometry> geometries = new ArrayList<>();
             for (int i = 0; i < collection.getNumGeometries(); i++) {
-                if (getDimensionOfGeomType(collection.getGeometryN(i)) == dimension) {
-                    geometries.add(collection.getGeometryN(i));
+                Geometry geometryN = collection.getGeometryN(i);
+                if (getDimensionOfGeomType(geometryN) == dimension) {
+                    geometries.add(geometryN);
                 }
             }
             if (geometries.isEmpty()) {
-                unionGeom = GeomConstant.EMPTY_GEOM;
+                unionGeom = GeomConstant.EMPTY_GEOMETRY;
             } else {
                 unionGeom = geometries.get(0);
                 for (int i = 1; i < geometries.size(); i++) {
                     unionGeom = unionGeom.union(geometries.get(i));
                 }
             }
-        } else {
+        } else if (d == dimension) {
             unionGeom = geometry;
+        } else {
+            unionGeom = getEmptyGeometryByDimension(dimension);
         }
         return unionGeom;
+    }
+
+    public static Geometry getEmptyGeometryByDimension(int dimension) {
+        Geometry geometry;
+        switch (dimension) {
+            case 0:
+                geometry = GeomConstant.EMPTY_POINT;
+                break;
+            case 1:
+                geometry = GeomConstant.EMPTY_LINESTRING;
+                break;
+            case 2:
+                geometry = GeomConstant.EMPTY_POLYGON;
+                break;
+            case 3:
+                geometry = GeomConstant.EMPTY_GEOMETRYCOLLECTION;
+                break;
+            default:
+                geometry = GeomConstant.EMPTY_GEOMETRY;
+        }
+        return geometry;
     }
 
     public static Geometry getGeometryFromText(String[] text, Boolean isWkt, String geometryType) throws ParseException {
@@ -84,7 +110,7 @@ public final class GeometryUtil {
                 geometry = wktReader.read(String.format("LINESTRING (%s %s,%s %s)", text[0], text[1], text[2], text[3]));
                 break;
             default:
-                geometry = GeomConstant.EMPTY_GEOM;
+                geometry = GeomConstant.EMPTY_GEOMETRY;
         }
         return geometry;
     }

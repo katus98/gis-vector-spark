@@ -2,12 +2,13 @@ package com.katus.util;
 
 import com.katus.constant.StatisticalMethod;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 /**
  * @author Sun Katus
- * @version 1.0, 2020-11-17
+ * @version 1.1, 2020-12-12
  */
 public final class FieldUtil {
     public static String[] merge(String[] fieldNames1, String[] fieldNames2) {
@@ -21,6 +22,16 @@ public final class FieldUtil {
         for (String field : fields2) {
             fieldNames[i++] = fields1.contains(field) ? field + "_2" : field;
         }
+        return fieldNames;
+    }
+
+    public static String[] mergeToLeast(String[] fieldNames1, String[] fieldNames2) {
+        ArrayList<String> fields = new ArrayList<>(Arrays.asList(fieldNames1));
+        for (String field : fieldNames2) {
+            if (!fields.contains(field)) fields.add(field);
+        }
+        String[] fieldNames = new String[fields.size()];
+        fields.toArray(fieldNames);
         return fieldNames;
     }
 

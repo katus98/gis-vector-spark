@@ -20,7 +20,7 @@ import java.util.LinkedHashMap;
 
 /**
  * @author Sun Katus
- * @version 1.1, 2020-12-08
+ * @version 1.2, 2020-12-11
  */
 @Slf4j
 public class SpatialJoin {
@@ -51,8 +51,8 @@ public class SpatialJoin {
         if (!mArgs.getCrs().equals(mArgs.getCrs2())) {
             joinLayer = joinLayer.project(CrsUtil.getByCode(mArgs.getCrs()));
         }
-        targetLayer = targetLayer.index(14);
-        joinLayer = joinLayer.index(14);
+        targetLayer = targetLayer.index();
+        joinLayer = joinLayer.index();
         JoinType joinType = JoinType.valueOf(mArgs.getJoinType().trim().toUpperCase());
         SpatialRelationship relationship = SpatialRelationship.valueOf(mArgs.getSpatialRelationship().trim().toUpperCase());
 
@@ -80,19 +80,19 @@ public class SpatialJoin {
                         Method spatialMethod = Geometry.class.getMethod(relationship.getMethodName(), Geometry.class);
                         Boolean isSatisfied = (Boolean) spatialMethod.invoke(tarFeature.getGeometry(), joinFeature.getGeometry());
                         if (isSatisfied) {
-                            key = tarFeature.getFid() + "#+";
+                            key = tarFeature.getFid() + "#" + joinFeature.getFid() + "#+";
                             attributes = AttributeUtil.merge(fieldNames, tarFeature.getAttributes(), joinFeature.getAttributes());
                         }
                     }
                     return new Tuple2<>(key, new Feature(tarFeature.getFid(), attributes, tarFeature.getGeometry()));
                 })
+                .reduceByKey((f1, f2) -> f1)
                 .cache();
         JavaPairRDD<String, Feature> joined = tempResult
                 .filter(pairItem -> pairItem._1().endsWith("#+"))
                 .mapToPair(pairItem -> new Tuple2<>(pairItem._2().getFid(), pairItem._2()));
         JavaPairRDD<String, Feature> disJoined = tempResult
                 .filter(pairItem -> pairItem._1().endsWith("#-"))
-                .reduceByKey((f1, f2) -> f1)
                 .mapToPair(pairItem -> new Tuple2<>(pairItem._2().getFid(), pairItem._2()));
         JavaPairRDD<String, Feature> result = joined.fullOuterJoin(disJoined)
                 .mapToPair(fullPairItems -> {

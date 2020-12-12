@@ -17,7 +17,7 @@ import scala.Tuple2;
 
 /**
  * @author Sun Katus
- * @version 1.1, 2020-12-08
+ * @version 1.2, 2020-12-11
  */
 @Slf4j
 public class Clip {
@@ -55,8 +55,8 @@ public class Clip {
         if (!mArgs.getCrs().equals(mArgs.getCrs2())) {
             extentLayer = extentLayer.project(CrsUtil.getByCode(mArgs.getCrs()));
         }
-        targetLayer = targetLayer.index(14);
-        extentLayer = extentLayer.index(14);
+        targetLayer = targetLayer.index();
+        extentLayer = extentLayer.index();
 
         log.info("Start Calculation");
         Layer layer = clip(targetLayer, extentLayer);
@@ -77,15 +77,25 @@ public class Clip {
                     Feature extentFeature = pairItems._2()._2();
                     Geometry geoTarget = targetFeature.getGeometry();
                     Geometry geoExtent = extentFeature.getGeometry();
-                    Feature feature = null;
+                    Feature feature;
+                    String key = "";
                     if (geoTarget.intersects(geoExtent)) {
+                        key = targetFeature.getFid() + "#" + extentFeature.getFid();
                         Geometry inter = geoExtent.intersection(geoTarget);
-                        inter = GeometryUtil.breakGeometryCollectionByDimension(inter, dimension);
+                        inter = GeometryUtil.breakByDimension(inter, dimension);
                         feature = new Feature(targetFeature.getFid(), targetFeature.getAttributes(), inter);
+                    } else {
+                        feature = Feature.EMPTY_FEATURE;
                     }
-                    return new Tuple2<>(pairItems._1(), feature);
+                    return new Tuple2<>(key, feature);
                 })
-                .filter(pairItem -> pairItem._2() != null && GeometryUtil.getDimensionOfGeomType(pairItem._2().getGeometry()) == dimension)
+                .filter(pairItem -> pairItem._2().hasGeometry())
+                .reduceByKey((f1, f2) -> f1)
+                .mapToPair(pairItem -> new Tuple2<>(pairItem._2().getFid(), pairItem._2()))
+                .reduceByKey((f1, f2) -> {
+                    f1.setGeometry(f1.getGeometry().union(f2.getGeometry()));
+                    return f1;
+                })
                 .cache();
         return Layer.create(result, metadata.getFieldNames(), metadata.getCrs(), metadata.getGeometryType(), result.count());
     }

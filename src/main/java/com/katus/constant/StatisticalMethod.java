@@ -11,7 +11,7 @@ public enum StatisticalMethod implements Serializable {
     MAXIMUM,
     MINIMUM,
     SUM,
-    MAIN;
+    MEAN;
 
     public String getFieldNamePostfix() {
         return "_#" + this.name() + "#";

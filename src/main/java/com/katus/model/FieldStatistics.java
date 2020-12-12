@@ -55,7 +55,7 @@ public class FieldStatistics {
                 .map(String::toUpperCase)
                 .map(StatisticalMethod::valueOf)
                 .collect(Collectors.toList());
-        if (statisticalMethods.contains(StatisticalMethod.MAIN)) {
+        if (statisticalMethods.contains(StatisticalMethod.MEAN)) {
             if (!statisticalMethods.contains(StatisticalMethod.SUM)) statisticalMethods.add(StatisticalMethod.SUM);
             if (!statisticalMethods.contains(StatisticalMethod.COUNT)) statisticalMethods.add(StatisticalMethod.COUNT);
         }
@@ -107,14 +107,14 @@ public class FieldStatistics {
                     feature.setAttributes(newAttrs);
                     return new Tuple2<>(pairItem._1(), feature);
                 });
-        if (statisticalMethods.contains(StatisticalMethod.MAIN)) {
+        if (statisticalMethods.contains(StatisticalMethod.MEAN)) {
             result = result.mapToPair(pairItem -> {
                 Feature feature = pairItem._2();
                 LinkedHashMap<String, Object> attributes = feature.getAttributes();
                 for (String summaryField : summaryFields) {
                     long count = ((Number) attributes.get(summaryField + StatisticalMethod.COUNT.getFieldNamePostfix())).longValue();
                     double sum = ((Number) attributes.get(summaryField + StatisticalMethod.SUM.getFieldNamePostfix())).doubleValue();
-                    attributes.put(summaryField + StatisticalMethod.MAIN.getFieldNamePostfix(), 1.0 * sum / count);
+                    attributes.put(summaryField + StatisticalMethod.MEAN.getFieldNamePostfix(), sum / count);
                 }
                 return pairItem;
             }).cache();
