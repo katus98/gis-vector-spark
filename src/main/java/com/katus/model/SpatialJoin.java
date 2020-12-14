@@ -104,12 +104,15 @@ public class SpatialJoin {
                         return new Tuple2<>(fullPairItems._1(), disJoinedFeature);
                     }
                 });
+        Long featureCount;
         if (joinType.equals(JoinType.ONE_TO_ONE)) {
             result = result.reduceByKey((f1, f2) -> f1).cache();
+            featureCount = metadata1.getFeatureCount();
         } else {
             result = result.cache();
+            featureCount = result.count();
         }
         tempResult.unpersist();
-        return Layer.create(result, fieldNames, metadata1.getCrs(), metadata1.getGeometryType(), result.count());
+        return Layer.create(result, fieldNames, metadata1.getCrs(), metadata1.getGeometryType(), featureCount);
     }
 }

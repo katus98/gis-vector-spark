@@ -15,7 +15,7 @@ import scala.Tuple2;
 
 /**
  * @author Sun Katus
- * @version 1.1, 2020-12-08
+ * @version 1.2, 2020-12-14
  */
 @Slf4j
 public class ConvexHull {
@@ -57,6 +57,6 @@ public class ConvexHull {
                     return new Tuple2<>(pairItem._1(), feature);
                 })
                 .cache();
-        return Layer.create(result, metadata.getFieldNames(), metadata.getCrs(), geometryType, result.count());
+        return Layer.create(result, metadata.getFieldNames(), metadata.getCrs(), geometryType, metadata.getFeatureCount());
     }
 }

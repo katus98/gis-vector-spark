@@ -15,7 +15,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * @author Mengxiao Wang (wmx), Sun Katus
- * @version 1.1, 2020-12-08
+ * @version 1.2, 2020-12-14
  */
 @Slf4j
 public class Buffer {
@@ -66,6 +66,6 @@ public class Buffer {
             pairItem._2().setGeometry(pairItem._2().getGeometry().buffer(distance));
             return pairItem;
         }).cache();
-        return Layer.create(result, metadata.getFieldNames(), metadata.getCrs(), "Polygon", result.count());
+        return Layer.create(result, metadata.getFieldNames(), metadata.getCrs(), "Polygon", metadata.getFeatureCount());
     }
 }

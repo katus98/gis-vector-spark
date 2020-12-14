@@ -53,7 +53,7 @@ public class ShapeFileLayerGenerator extends LayerGenerator {
                 .cache();
         long featureCount = featuresWithInfo.count() - 1;
         Map<String, Object> attributes = featuresWithInfo.filter(pairItem -> pairItem._1().equals("###INFO###")).collect().get(0)._2().getAttributes();
-        JavaPairRDD<String, Feature> features = featuresWithInfo.filter(pairItem -> !pairItem._1().equals("###INFO###"));
+        JavaPairRDD<String, Feature> features = featuresWithInfo.filter(pairItem -> !pairItem._1().equals("###INFO###")).cache();
         featuresWithInfo.unpersist();
         CoordinateReferenceSystem crs = CrsUtil.getByESRIWkt((String) attributes.get("crs"));
         return Layer.create(features, (String[]) attributes.get("fieldNames"), crs, (String) attributes.get("geometryType"), featureCount);
