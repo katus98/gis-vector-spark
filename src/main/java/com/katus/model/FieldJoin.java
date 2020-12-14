@@ -17,7 +17,7 @@ import java.util.LinkedHashMap;
 
 /**
  * @author Sun Katus
- * @version 1.1, 2020-12-08
+ * @version 1.2, 2020-12-14
  */
 @Slf4j
 public class FieldJoin {
@@ -92,11 +92,14 @@ public class FieldJoin {
                     tarFeature.setAttributes(attributes);
                     return new Tuple2<>(tarFeature.getFid(), tarFeature);
                 });
+        Long featureCount;
         if (joinType.equals(JoinType.ONE_TO_ONE)) {
             result = result.reduceByKey((f1, f2) -> f1).cache();
+            featureCount = metadata1.getFeatureCount();
         } else {
             result = result.cache();
+            featureCount = result.count();
         }
-        return Layer.create(result, fieldNames, metadata1.getCrs(), metadata1.getGeometryType(), result.count());
+        return Layer.create(result, fieldNames, metadata1.getCrs(), metadata1.getGeometryType(), featureCount);
     }
 }

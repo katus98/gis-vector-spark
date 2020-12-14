@@ -14,7 +14,7 @@ import java.util.HashMap;
 
 /**
  * @author Sun Katus
- * @version 1.2, 2020-12-12
+ * @version 1.3, 2020-12-14
  */
 @Slf4j
 public class Merge {
@@ -79,6 +79,7 @@ public class Merge {
             return pairItem;
         });
         JavaPairRDD<String, Feature> result = result1.union(result2).cache();
-        return Layer.create(result, fieldNames, metadata1.getCrs(), metadata1.getGeometryType(), result.count());
+        long featureCount = metadata1.getFeatureCount() + metadata2.getFeatureCount();
+        return Layer.create(result, fieldNames, metadata1.getCrs(), metadata1.getGeometryType(), featureCount);
     }
 }
