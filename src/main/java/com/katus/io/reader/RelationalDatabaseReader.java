@@ -5,12 +5,10 @@ import lombok.Setter;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
-import org.apache.spark.sql.types.StructType;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -71,7 +69,21 @@ public abstract class RelationalDatabaseReader implements Serializable {
         for (String table : tables) {
             datasets.add(readSingleTable(ss, table));
         }
-        return datasets.stream().reduce(Dataset::union).orElse(ss.createDataFrame(Collections.emptyList(), StructType.class));
+        return datasets.stream().reduce(Dataset::union).orElse(ss.emptyDataFrame());
+    }
+
+    protected Dataset<Row> readTable(SparkSession ss, String table, String url) {
+        return ss.read()
+                .format("jdbc")
+                .option("url", url)
+                .option("dbtable", table)
+                .option("driver", driver)
+                .option("user", username)
+                .option("password", password)
+                .option("fetchsize", fetchSize)   // 每次往返提取的行数 仅对读取生效
+                .option("continueBatchOnError", continueBatchOnError)
+                .option("pushDownPredicate", pushDownPredicate) // 默认请求下推
+                .load();
     }
 
     protected Dataset<Row> readSingleTable(SparkSession ss, String table) {
