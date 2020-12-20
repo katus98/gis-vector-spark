@@ -2,7 +2,6 @@ package com.katus.util;
 
 import com.katus.constant.GeomConstant;
 import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 
@@ -43,21 +42,17 @@ public final class GeometryUtil {
         Geometry unionGeom;
         int d = getDimensionOfGeomType(geometry);
         if (d == 3) {   // GeometryCollection
-            GeometryCollection collection = (GeometryCollection) geometry;
             List<Geometry> geometries = new ArrayList<>();
-            for (int i = 0; i < collection.getNumGeometries(); i++) {
-                Geometry geometryN = collection.getGeometryN(i);
-                if (getDimensionOfGeomType(geometryN) == dimension) {
+            for (int i = 0; i < geometry.getNumGeometries(); i++) {
+                Geometry geometryN = geometry.getGeometryN(i);
+                if (getDimensionOfGeomType(geometryN) == dimension && !geometryN.isEmpty()) {
                     geometries.add(geometryN);
                 }
             }
             if (geometries.isEmpty()) {
-                unionGeom = GeomConstant.EMPTY_GEOMETRY;
+                unionGeom = getEmptyGeometryByDimension(dimension);
             } else {
-                unionGeom = geometries.get(0);
-                for (int i = 1; i < geometries.size(); i++) {
-                    unionGeom = unionGeom.union(geometries.get(i));
-                }
+                unionGeom = geometries.stream().reduce(Geometry::union).get();
             }
         } else if (d == dimension) {
             unionGeom = geometry;
