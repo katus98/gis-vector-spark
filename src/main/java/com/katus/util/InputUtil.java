@@ -5,10 +5,7 @@ import com.katus.io.lg.LayerGenerator;
 import com.katus.io.lg.RelationalDatabaseLayerGenerator;
 import com.katus.io.lg.ShapeFileLayerGenerator;
 import com.katus.io.lg.TextFileLayerGenerator;
-import com.katus.io.reader.MySQLReader;
-import com.katus.io.reader.PostgreSQLReader;
-import com.katus.io.reader.RelationalDatabaseReader;
-import com.katus.io.reader.TextFileReader;
+import com.katus.io.reader.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.spark.sql.SparkSession;
 
@@ -17,7 +14,7 @@ import java.util.Properties;
 
 /**
  * @author Sun Katus
- * @version 1.1, 2020-12-08
+ * @version 1.2, 2020-12-20
  */
 @Slf4j
 public final class InputUtil {
@@ -40,15 +37,26 @@ public final class InputUtil {
         } else if (source.startsWith("mysql:")) {
             sourceUri = connectionProp.getProperty("mysql.url");
             source = source.substring(6);
+        } else if (source.startsWith("citus:")) {
+            sourceUri = connectionProp.getProperty("postgresql.url") + ":citus";
+            source = source.substring(6);
         } else {
             sourceUri = "file://" + source;
         }
         LayerGenerator generator;
         if (sourceUri.startsWith("jdbc:")) {
             String dbType = sourceUri.substring(5, sourceUri.indexOf("://")).toLowerCase();
+            if (sourceUri.endsWith(":citus")) {
+                sourceUri = sourceUri.substring(0, sourceUri.lastIndexOf(":"));
+                dbType = "citus";
+            }
             String[] tables = source.split(",");
             RelationalDatabaseReader rdbReader;
             switch (dbType) {
+                case "citus":
+                    rdbReader = new CitusPostgreSQLReader(sourceUri, tables, connectionProp.getProperty("postgresql.user"),
+                            connectionProp.getProperty("postgresql.password"), geometryFields, crs, isWkt, geometryType);
+                    break;
                 case "mysql":
                     rdbReader = new MySQLReader(sourceUri, tables, connectionProp.getProperty(dbType + ".user"),
                             connectionProp.getProperty(dbType + ".password"), serialField, geometryFields, crs, isWkt, geometryType);

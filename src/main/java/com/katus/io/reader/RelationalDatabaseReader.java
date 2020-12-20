@@ -13,7 +13,7 @@ import java.util.List;
 
 /**
  * @author Sun Katus
- * @version 1.0, 2020-12-04
+ * @version 1.1, 2020-12-19
  * @since 1.1
  */
 @Getter

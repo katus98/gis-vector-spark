@@ -14,12 +14,13 @@ import java.util.Map;
 /**
  * @author Sun Katus
  * @version 1.0, 2020-12-19
+ * @since 1.2
  */
 public class CitusPostgreSQLReader extends PostgreSQLReader {
-    private Map<String, List<Tuple2<String, String>>> sharedMaps;
+    private final Map<String, List<Tuple2<String, String>>> sharedMaps;
 
-    public CitusPostgreSQLReader(String url, String[] tables, String username, String password, String serialField, String[] geometryFields, String crs, Boolean isWkt, String geometryType) {
-        super(url, tables, username, password, serialField, geometryFields, crs, isWkt, geometryType);
+    public CitusPostgreSQLReader(String url, String[] tables, String username, String password, String[] geometryFields, String crs, Boolean isWkt, String geometryType) {
+        super(url, tables, username, password, "", geometryFields, crs, isWkt, geometryType);
         this.sharedMaps = new HashMap<>();
         initCitus();
     }
