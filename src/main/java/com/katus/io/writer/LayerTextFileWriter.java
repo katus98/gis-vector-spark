@@ -8,21 +8,24 @@ import com.katus.util.fs.FsManipulatorFactory;
 import lombok.Getter;
 import org.apache.hadoop.fs.Path;
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
 import scala.Tuple2;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 /**
  * @author Sun Katus
- * @version 1.0, 2020-11-13
+ * @version 1.1, 2020-12-21
  */
 @Getter
-public class LayerTextFileWriter {
+public class LayerTextFileWriter implements Serializable {
     private final String dirURI;
     private final String fileURI;
 
@@ -39,10 +42,83 @@ public class LayerTextFileWriter {
         this.fileURI = fileURI;
     }
 
+    private String initDir() throws IOException {
+        FsManipulator fsManipulator = FsManipulatorFactory.create(dirURI);
+        if (!fsManipulator.exists(dirURI)) {
+            fsManipulator.mkdirs(dirURI);
+        }
+        return dirURI.substring(dirURI.lastIndexOf("/") + 1);
+    }
+
     public void writeToDir(Layer layer) throws IOException {   // without title line
         layer.mapToPair(pairItem -> new Tuple2<>(pairItem._1(), pairItem._2().toString()))
                 .saveAsHadoopFile(dirURI, String.class, String.class, TextFileOutputFormat.class);
-        removeVerificationFile(dirURI);
+        outputMetadata(layer.getMetadata(), false, false, true);
+    }
+
+    public void writeToFiles(Layer layer) throws IOException {
+        writeToFiles(layer, true, false, true);
+    }
+
+    public void writeToFiles(Layer layer, Boolean withHeader, Boolean withKey, Boolean withGeometry) throws IOException {
+        String filename = initDir();
+        String[] fieldNames = layer.getMetadata().getFieldNames();
+        JavaRDD<String> outputContent = getOutputContent(layer, withKey, withGeometry);
+        List<String> outputInfo = outputContent.mapPartitionsWithIndex((index, it) -> {
+            List<String> result = new ArrayList<>();
+            String parFileURI = dirURI + "/" + filename + "-" + index + ".tsv";
+            try {
+                FsManipulator fsManipulator = FsManipulatorFactory.create(parFileURI);
+                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fsManipulator.write(parFileURI, true)));
+                if (withHeader) {
+                    String title = getTitleLine(fieldNames, withKey, withGeometry);
+                    writer.write(title + "\n");
+                }
+                while (it.hasNext()) {
+                    writer.write(it.next() + "\n");
+                }
+                writer.flush();
+                writer.close();
+                result.add(parFileURI + ": succeeded!");
+            } catch (IOException e) {
+                result.add(parFileURI + ": failed!");
+            }
+            return result.iterator();
+        }, false).collect();
+        outputInfo.forEach(System.out::println);
+        outputMetadata(layer.getMetadata(), withHeader, withKey, withGeometry);
+    }
+
+    public void writeToFiles(Dataset<Row> dataset) throws IOException {
+        String filename = initDir();
+        String[] fieldNames = dataset.columns();
+        List<String> outputInfo = dataset.toJavaRDD().map(row -> {
+            StringBuilder builder = new StringBuilder();
+            for (String fieldName : fieldNames) {
+                builder.append(row.get(row.fieldIndex(fieldName))).append("\t");
+            }
+            builder.deleteCharAt(builder.length() - 1);
+            return builder.toString();
+        }).mapPartitionsWithIndex((index, it) -> {
+            List<String> result = new ArrayList<>();
+            String parFileURI = dirURI + "/" + filename + "-" + index + ".tsv";
+            try {
+                FsManipulator fsManipulator = FsManipulatorFactory.create(parFileURI);
+                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fsManipulator.write(parFileURI, true)));
+                String title = getTitleLine(fieldNames, false, false);
+                writer.write(title + "\n");
+                while (it.hasNext()) {
+                    writer.write(it.next() + "\n");
+                }
+                writer.flush();
+                writer.close();
+                result.add(parFileURI + ": succeeded!");
+            } catch (IOException e) {
+                result.add(parFileURI + ": failed!");
+            }
+            return result.iterator();
+        }, false).collect();
+        outputInfo.forEach(System.out::println);
     }
 
     public void writeToFileByPartCollect(Layer layer) throws IOException {
@@ -69,7 +145,6 @@ public class LayerTextFileWriter {
         writer.flush();
         writer.close();
         outputMetadata(layer.getMetadata(), withHeader, withKey, withGeometry);
-        removeVerificationFile(fileURI);
     }
 
     @Deprecated
@@ -92,7 +167,6 @@ public class LayerTextFileWriter {
         }
         fsManipulator.writeTextToFile(fileURI, allContent);
         outputMetadata(layer.getMetadata(), withHeader, withKey, withGeometry);
-        removeVerificationFile(fileURI);
     }
 
     private static String getTitleLine(String[] fieldNames, Boolean withKey, Boolean withGeometry) {
@@ -128,6 +202,7 @@ public class LayerTextFileWriter {
         });
     }
 
+    @Deprecated
     private static void removeVerificationFile(String uri) throws IOException {
         FsManipulator fsManipulator = FsManipulatorFactory.create(uri);
         String crcURI;
