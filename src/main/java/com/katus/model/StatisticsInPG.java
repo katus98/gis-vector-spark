@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 /**
  * @author Sun Katus
  * @version 1.0, 2020-12-20
+ * @since 1.2
  */
 @Slf4j
 public class StatisticsInPG {
@@ -38,6 +39,7 @@ public class StatisticsInPG {
             throw new RuntimeException(msg);
         }
 
+        log.info("Load data");
         String tablePre = mArgs.getInput();
         String[] tables = tablePre.substring(tablePre.indexOf(":") + 1).split(",");
         PostgreSQLReader reader = new PostgreSQLReader(InputUtil.connectionProp.getProperty("postgresql.url"), tables, InputUtil.connectionProp.getProperty("postgresql.user"),
@@ -57,6 +59,8 @@ public class StatisticsInPG {
                 exprList.add(new Tuple2<>(summaryField, statisticalMethod.getFunName()));
             }
         }
+
+        log.info("Start Calculation");
         RelationalGroupedDataset groupedDataset;
         switch (categoryFields.length) {
             case 0:
@@ -70,14 +74,16 @@ public class StatisticsInPG {
                 System.arraycopy(categoryFields, 1, categoryFields2, 0, categoryFields.length - 1);
                 groupedDataset = data.groupBy(categoryFields[0], categoryFields2);
         }
-        Dataset<Row> df;
+        Dataset<Row> resultDataset;
         if (exprList.isEmpty()) {
-            df = groupedDataset.count();
+            resultDataset = groupedDataset.count();
         } else {
-            df = groupedDataset.agg(exprList.get(0), JavaConverters.asScalaIteratorConverter(exprList.subList(1, exprList.size()).iterator()).asScala().toSeq());
+            resultDataset = groupedDataset.agg(exprList.get(0), JavaConverters.asScalaIteratorConverter(exprList.subList(1, exprList.size()).iterator()).asScala().toSeq());
         }
+
+        log.info("Output result");
         LayerTextFileWriter writer = new LayerTextFileWriter(mArgs.getOutput());
-        writer.writeToDirByMap(df.repartition(1));
+        writer.writeToDirByMap(resultDataset.repartition(1));
 
         ss.close();
     }
