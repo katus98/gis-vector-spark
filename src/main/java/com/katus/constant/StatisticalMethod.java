@@ -1,5 +1,7 @@
 package com.katus.constant;
 
+import lombok.Getter;
+
 import java.io.Serializable;
 
 /**
@@ -7,11 +9,18 @@ import java.io.Serializable;
  * @version 1.0, 2020-11-19
  */
 public enum StatisticalMethod implements Serializable {
-    COUNT,
-    MAXIMUM,
-    MINIMUM,
-    SUM,
-    MEAN;
+    COUNT("count"),
+    MAXIMUM("max"),
+    MINIMUM("min"),
+    SUM("sum"),
+    MEAN("avg");
+
+    @Getter
+    private final String funName;
+
+    StatisticalMethod(String funName) {
+        this.funName = funName;
+    }
 
     public String getFieldNamePostfix() {
         return "_#" + this.name() + "#";

@@ -8,6 +8,8 @@ import com.katus.util.fs.FsManipulatorFactory;
 import lombok.Getter;
 import org.apache.hadoop.fs.Path;
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
 import scala.Tuple2;
 
 import java.io.BufferedWriter;
@@ -69,6 +71,32 @@ public class LayerTextFileWriter {
         writer.flush();
         writer.close();
         outputMetadata(layer.getMetadata(), withHeader, withKey, withGeometry);
+        removeVerificationFile(fileURI);
+    }
+
+    public void writeToFileByPartCollect(Dataset<Row> dataset) throws IOException {
+        FsManipulator fsManipulator = FsManipulatorFactory.create(fileURI);
+        if (fsManipulator.exists(fileURI)) {
+            fsManipulator.deleteFile(fileURI);
+        }
+        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fsManipulator.write(fileURI, false)));
+        String[] columns = dataset.columns();
+        JavaRDD<String> outputContent = dataset.toJavaRDD().map(row -> {
+            StringBuilder builder = new StringBuilder();
+            for (String column : columns) {
+                builder.append(row.get(row.fieldIndex(column))).append("\t");
+            }
+            builder.deleteCharAt(builder.length() - 1);
+            return builder.toString();
+        });
+        for (int i = 0; i < outputContent.getNumPartitions(); i++) {
+            List<String>[] partContent = outputContent.collectPartitions(new int[]{i});
+            for (String line : partContent[0]) {
+                writer.write(line + "\n");
+            }
+        }
+        writer.flush();
+        writer.close();
         removeVerificationFile(fileURI);
     }
 

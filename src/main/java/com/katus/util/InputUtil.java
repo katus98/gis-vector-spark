@@ -9,6 +9,7 @@ import com.katus.io.reader.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.spark.sql.SparkSession;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
@@ -18,14 +19,23 @@ import java.util.Properties;
  */
 @Slf4j
 public final class InputUtil {
+    public static final Properties connectionProp;
+    static {
+        connectionProp = new Properties();
+        InputStream is = InputUtil.class.getResourceAsStream("/db.properties");
+        try {
+            connectionProp.load(is);
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Database connection properties loads failed.");
+        }
+    }
+
     public static Layer makeLayer(SparkSession ss, String source, Boolean hasHeader, Boolean isWkt,
                                   String[] geometryFields, String separator, String crs, String charset,
                                   String geometryType, String serialField) throws Exception {
         Layer layer;
         String sourceUri;
-        Properties connectionProp = new Properties();
-        InputStream is = InputUtil.class.getResourceAsStream("/db.properties");
-        connectionProp.load(is);
         if (source.startsWith("file://") || source.startsWith("hdfs://")) {
             sourceUri = source;
         } else if (source.startsWith("jdbc:")) {
