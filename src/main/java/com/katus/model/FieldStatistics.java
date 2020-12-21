@@ -69,7 +69,7 @@ public class FieldStatistics {
         Layer layer = fieldStatistics(targetLayer, categoryFields, summaryFields, numberTypes, statisticalMethods);
 
         log.info("Output result");
-        LayerTextFileWriter writer = new LayerTextFileWriter("", mArgs.getOutput());
+        LayerTextFileWriter writer = new LayerTextFileWriter(mArgs.getOutput());
         writer.writeToFileByPartCollect(layer, Boolean.parseBoolean(mArgs.getNeedHeader()), false, false);
 
         ss.close();

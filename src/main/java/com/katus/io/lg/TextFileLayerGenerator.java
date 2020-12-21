@@ -37,7 +37,7 @@ public class TextFileLayerGenerator extends LayerGenerator implements Serializab
     public Layer generate() throws FactoryException {
         JavaSparkContext jsc = JavaSparkContext.fromSparkContext(ss.sparkContext());
         LongAccumulator dataItemErrorCount = ss.sparkContext().longAccumulator("DataItemErrorCount");
-        JavaPairRDD<String, Feature> features = jsc.textFile(reader.getFileURI())
+        JavaPairRDD<String, Feature> features = jsc.textFile(reader.getPathURI())
                 .repartition(jsc.defaultParallelism())
                 .filter(line -> !reader.getHasHeader() || !line.startsWith(reader.getFieldNames()[0]))
                 .mapToPair(line -> {

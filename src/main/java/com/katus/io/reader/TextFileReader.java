@@ -11,11 +11,11 @@ import java.nio.charset.Charset;
 
 /**
  * @author Sun Katus
- * @version 1.0, 2020-11-12
+ * @version 1.1, 2020-12-21
  */
 @Getter
 public class TextFileReader implements Serializable {
-    private final String fileURI;
+    private final String pathURI;
     private Boolean hasHeader;
     private Boolean isWkt;
     /*
@@ -31,24 +31,24 @@ public class TextFileReader implements Serializable {
     @Setter
     private String geometryType = "LineString";   // Polygon, LineString, Point
 
-    public TextFileReader(String fileURI) {
-        this(fileURI, false, true, new String[]{"-1"});
+    public TextFileReader(String pathURI) {
+        this(pathURI, false, true, new String[]{"-1"});
     }
 
-    public TextFileReader(String fileURI, Boolean hasHeader, Boolean isWkt, String[] geometryFields) {
-        this(fileURI, hasHeader, isWkt, geometryFields, "\t");
+    public TextFileReader(String pathURI, Boolean hasHeader, Boolean isWkt, String[] geometryFields) {
+        this(pathURI, hasHeader, isWkt, geometryFields, "\t");
     }
 
-    public TextFileReader(String fileURI, Boolean hasHeader, Boolean isWkt, String[] geometryFields, String separator) {
-        this(fileURI, hasHeader, isWkt, geometryFields, separator, "4326");
+    public TextFileReader(String pathURI, Boolean hasHeader, Boolean isWkt, String[] geometryFields, String separator) {
+        this(pathURI, hasHeader, isWkt, geometryFields, separator, "4326");
     }
 
-    public TextFileReader(String fileURI, Boolean hasHeader, Boolean isWkt, String[] geometryFields, String separator, String crs) {
-        this(fileURI, hasHeader, isWkt, geometryFields, separator, crs, "UTF-8");
+    public TextFileReader(String pathURI, Boolean hasHeader, Boolean isWkt, String[] geometryFields, String separator, String crs) {
+        this(pathURI, hasHeader, isWkt, geometryFields, separator, crs, "UTF-8");
     }
 
-    public TextFileReader(String fileURI, Boolean hasHeader, Boolean isWkt, String[] geometryFields, String separator, String crs, String charset) {
-        this.fileURI = fileURI;
+    public TextFileReader(String pathURI, Boolean hasHeader, Boolean isWkt, String[] geometryFields, String separator, String crs, String charset) {
+        this.pathURI = pathURI;
         this.hasHeader = hasHeader;
         this.isWkt = isWkt;
         this.geometryFields = geometryFields;
@@ -60,8 +60,9 @@ public class TextFileReader implements Serializable {
 
     private void initFields() {
         try {
-            FsManipulator fsManipulator = FsManipulatorFactory.create(fileURI);
-            String firstLine = fsManipulator.readToText(fileURI, 1, Charset.forName(charset)).get(0);
+            FsManipulator fsManipulator = FsManipulatorFactory.create(pathURI);
+            String filepath = fsManipulator.isFile(pathURI) ? pathURI : fsManipulator.listFiles(pathURI)[0].toString();
+            String firstLine = fsManipulator.readToText(filepath, 1, Charset.forName(charset)).get(0);
             String[] fields = firstLine.split(separator);
             initGeometryFields(fields.length);
             if (hasHeader) {

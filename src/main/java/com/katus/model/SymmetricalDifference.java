@@ -65,7 +65,7 @@ public class SymmetricalDifference {
         Layer layer = symmetricalDifference(layer1, layer2);
 
         log.info("Output result");
-        LayerTextFileWriter writer = new LayerTextFileWriter("", mArgs.getOutput());
+        LayerTextFileWriter writer = new LayerTextFileWriter(mArgs.getOutput());
         writer.writeToFileByPartCollect(layer, Boolean.parseBoolean(mArgs.getNeedHeader()), false, true);
 
         ss.close();
