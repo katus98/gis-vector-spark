@@ -139,32 +139,6 @@ public class LayerTextFileWriter implements Serializable {
         outputMetadata(layer.getMetadata(), withHeader, withKey, withGeometry);
     }
 
-    public void writeToFileByPartCollect(Dataset<Row> dataset) throws IOException {
-        FsManipulator fsManipulator = FsManipulatorFactory.create(fileURI);
-        if (fsManipulator.exists(fileURI)) {
-            fsManipulator.deleteFile(fileURI);
-        }
-        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fsManipulator.write(fileURI, false)));
-        String[] columns = dataset.columns();
-        JavaRDD<String> outputContent = dataset.toJavaRDD().map(row -> {
-            StringBuilder builder = new StringBuilder();
-            for (String column : columns) {
-                builder.append(row.get(row.fieldIndex(column))).append("\t");
-            }
-            builder.deleteCharAt(builder.length() - 1);
-            return builder.toString();
-        });
-        for (int i = 0; i < outputContent.getNumPartitions(); i++) {
-            List<String>[] partContent = outputContent.collectPartitions(new int[]{i});
-            for (String line : partContent[0]) {
-                writer.write(line + "\n");
-            }
-        }
-        writer.flush();
-        writer.close();
-        removeVerificationFile(fileURI);
-    }
-
     @Deprecated
     public void writeToFileByCollect(Layer layer) throws IOException {
         writeToFileByCollect(layer, true, false, true);

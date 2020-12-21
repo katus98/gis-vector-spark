@@ -3,7 +3,7 @@ package com.katus.model;
 import com.katus.constant.StatisticalMethod;
 import com.katus.io.reader.PostgreSQLReader;
 import com.katus.io.writer.LayerTextFileWriter;
-import com.katus.model.args.FieldStatistics2Args;
+import com.katus.model.args.FieldStatisticsArgs;
 import com.katus.util.InputUtil;
 import com.katus.util.SparkUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -25,15 +25,15 @@ import java.util.stream.Collectors;
  * @version 1.0, 2020-12-20
  */
 @Slf4j
-public class FieldStatistics2 {
+public class StatisticsInPG {
     public static void main(String[] args) throws IOException {
         log.info("Setup Spark Session");
         SparkSession ss = SparkUtil.getSparkSession();
 
         log.info("Setup arguments");
-        FieldStatistics2Args mArgs = FieldStatistics2Args.initArgs(args);
+        FieldStatisticsArgs mArgs = FieldStatisticsArgs.initArgs(args);
         if (mArgs == null) {
-            String msg = "Init Field Statistics2 Args failed, exit!";
+            String msg = "Init Statistics In PG Args failed, exit!";
             log.error(msg);
             throw new RuntimeException(msg);
         }
@@ -76,8 +76,8 @@ public class FieldStatistics2 {
         } else {
             df = groupedDataset.agg(exprList.get(0), JavaConverters.asScalaIteratorConverter(exprList.subList(1, exprList.size()).iterator()).asScala().toSeq());
         }
-        LayerTextFileWriter writer = new LayerTextFileWriter("", mArgs.getOutput());
-        writer.writeToFileByPartCollect(df);
+        LayerTextFileWriter writer = new LayerTextFileWriter(mArgs.getOutput());
+        writer.writeToDirByMap(df.repartition(1));
 
         ss.close();
     }
