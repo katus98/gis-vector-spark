@@ -44,7 +44,7 @@ public class FieldTextSelector {
         Layer layer = fieldTextSelect(targetLayer, selectField, relationShip, keywords);
 
         log.info("Output result");
-        LayerTextFileWriter writer = new LayerTextFileWriter("", mArgs.getOutput());
+        LayerTextFileWriter writer = new LayerTextFileWriter(mArgs.getOutput());
         writer.writeToFileByPartCollect(layer, Boolean.parseBoolean(mArgs.getNeedHeader()), false, true);
 
         ss.close();

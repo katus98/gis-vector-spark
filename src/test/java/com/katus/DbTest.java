@@ -27,7 +27,7 @@ public class DbTest {
         RelationalDatabaseLayerGenerator lg = new RelationalDatabaseLayerGenerator(ss, reader);
         Layer layer = lg.generate();
         Layer layer1 = Layer.create(layer.filter(pairItem -> (Integer) pairItem._2().getAttribute("id") <= 10000), layer.getMetadata());
-        LayerTextFileWriter writer = new LayerTextFileWriter("", "/D:/Data/gjj/test.csv");
+        LayerTextFileWriter writer = new LayerTextFileWriter("/D:/Data/gjj/test.csv");
         writer.writeToFileByPartCollect(layer1, true, false, true);
     }
 }
