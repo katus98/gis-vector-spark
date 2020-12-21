@@ -70,7 +70,7 @@ public class JoinInPG {
 
         log.info("Output result");
         LayerTextFileWriter writer = new LayerTextFileWriter(mArgs.getOutput());
-        writer.writeToDirByMap(resultDataset);
+        writer.writeToDirByMap(resultDataset, Boolean.getBoolean(mArgs.getNeedHeader()));
 
         ss.close();
     }

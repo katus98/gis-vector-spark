@@ -81,7 +81,7 @@ public class LayerTextFileWriter implements Serializable {
         outputMetadata(layer.getMetadata(), withHeader, withKey, withGeometry);
     }
 
-    public void writeToDirByMap(Dataset<Row> dataset) throws IOException {
+    public void writeToDirByMap(Dataset<Row> dataset, Boolean withHeader) throws IOException {
         String filename = initDir();
         String[] fieldNames = dataset.columns();
         List<String> outputInfo = dataset.toJavaRDD().map(row -> {
@@ -97,8 +97,10 @@ public class LayerTextFileWriter implements Serializable {
             try {
                 FsManipulator fsManipulator = FsManipulatorFactory.create(parFileURI);
                 BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fsManipulator.write(parFileURI, false)));
-                String title = getTitleLine(fieldNames, false, false);
-                writer.write(title + "\n");
+                if (withHeader) {
+                    String title = getTitleLine(fieldNames, false, false);
+                    writer.write(title + "\n");
+                }
                 while (it.hasNext()) {
                     writer.write(it.next() + "\n");
                 }

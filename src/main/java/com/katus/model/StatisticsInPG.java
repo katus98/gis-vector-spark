@@ -83,7 +83,7 @@ public class StatisticsInPG {
 
         log.info("Output result");
         LayerTextFileWriter writer = new LayerTextFileWriter(mArgs.getOutput());
-        writer.writeToDirByMap(resultDataset.repartition(1));
+        writer.writeToDirByMap(resultDataset.repartition(1), Boolean.getBoolean(mArgs.getNeedHeader()));
 
         ss.close();
     }
