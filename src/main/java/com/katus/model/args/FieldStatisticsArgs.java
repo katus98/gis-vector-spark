@@ -26,6 +26,9 @@ public class FieldStatisticsArgs {
     @Option(name = "-input", usage = "输入目标数据路径", required = true)
     private String input;
 
+    @Option(name = "-layers", usage = "输入目标数据图层名称")
+    private String layers = "";
+
     @Option(name = "-categoryFields", usage = "输入目标数据分类字段")
     private String categoryFields = "";   // separate by ",", result will have one line if empty.
 

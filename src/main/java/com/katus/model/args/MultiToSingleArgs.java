@@ -23,6 +23,9 @@ public class MultiToSingleArgs {
 
     @Option(name = "-input", usage = "输入目标数据路径", required = true)
     private String input;
+
+    @Option(name = "-layers", usage = "输入目标数据图层名称")
+    private String layers = "";
     /**
      * The below is only for specific inputs, not always takes effect.
      */

@@ -1,10 +1,7 @@
 package com.katus.util;
 
 import com.katus.entity.Layer;
-import com.katus.io.lg.LayerGenerator;
-import com.katus.io.lg.RelationalDatabaseLayerGenerator;
-import com.katus.io.lg.ShapeFileLayerGenerator;
-import com.katus.io.lg.TextFileLayerGenerator;
+import com.katus.io.lg.*;
 import com.katus.io.reader.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.spark.sql.SparkSession;
@@ -18,7 +15,7 @@ import java.util.Properties;
  */
 @Slf4j
 public final class InputUtil {
-    public static Layer makeLayer(SparkSession ss, String source, Boolean hasHeader, Boolean isWkt,
+    public static Layer makeLayer(SparkSession ss, String source, String[] layerNames, Boolean hasHeader, Boolean isWkt,
                                   String[] geometryFields, String separator, String crs, String charset,
                                   String geometryType, String serialField) throws Exception {
         Layer layer;
@@ -73,6 +70,8 @@ public final class InputUtil {
             generator = new RelationalDatabaseLayerGenerator(ss, rdbReader);
         } else if (sourceUri.toLowerCase().endsWith(".shp")) {
             generator = new ShapeFileLayerGenerator(ss, source);
+        } else if (sourceUri.toLowerCase().endsWith(".gdb") || sourceUri.toLowerCase().endsWith(".mdb")) {
+            generator = new GeoDatabaseLayerGenerator(ss, source, layerNames);
         } else {
             TextFileReader reader = new TextFileReader(sourceUri, hasHeader, isWkt, geometryFields, separator, crs, charset);
             reader.setGeometryType(geometryType);

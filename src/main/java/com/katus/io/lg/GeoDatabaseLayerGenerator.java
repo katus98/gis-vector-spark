@@ -2,7 +2,7 @@ package com.katus.io.lg;
 
 import com.katus.entity.Feature;
 import com.katus.entity.Layer;
-import com.katus.io.reader.FileGeoDatabaseReader;
+import com.katus.io.reader.GeoDatabaseReader;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SparkSession;
@@ -19,18 +19,19 @@ import java.util.Map;
  * @version 1.0, 2020-12-23
  * @since 1.2
  */
-public class FileGeoDatabaseLayerGenerator extends LayerGenerator {
+public class GeoDatabaseLayerGenerator extends LayerGenerator {
     private final List<String> pathWithLayerNames;
 
-    public FileGeoDatabaseLayerGenerator(SparkSession ss, String path, String[] layers) {
+    public GeoDatabaseLayerGenerator(SparkSession ss, String path, String[] layers) {
         super(ss);
         this.pathWithLayerNames = new ArrayList<>();
         for (String layer : layers) {
+            if (layer.isEmpty()) continue;
             this.pathWithLayerNames.add(path + ":" + layer);
         }
     }
 
-    public FileGeoDatabaseLayerGenerator(SparkSession ss, String[] pathWithLayerNames) {
+    public GeoDatabaseLayerGenerator(SparkSession ss, String[] pathWithLayerNames) {
         super(ss);
         this.pathWithLayerNames = new ArrayList<>(Arrays.asList(pathWithLayerNames));
     }
@@ -40,7 +41,7 @@ public class FileGeoDatabaseLayerGenerator extends LayerGenerator {
         JavaSparkContext jsc = JavaSparkContext.fromSparkContext(ss.sparkContext());
         JavaPairRDD<String, Feature> featuresWithInfo = jsc.parallelize(pathWithLayerNames)
                 .flatMapToPair(pathWithLayerName -> {
-                    FileGeoDatabaseReader reader = new FileGeoDatabaseReader(pathWithLayerName);
+                    GeoDatabaseReader reader = new GeoDatabaseReader(pathWithLayerName);
                     List<Tuple2<String, Feature>> result = new ArrayList<>();
                     Feature feature = reader.next();
                     String type = feature != null ? feature.getGeometry().getGeometryType() : "";

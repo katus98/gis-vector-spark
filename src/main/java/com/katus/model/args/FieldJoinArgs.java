@@ -30,6 +30,9 @@ public class FieldJoinArgs {
     @Option(name = "-input1", usage = "输入目标数据路径", required = true)
     private String input1;
 
+    @Option(name = "-layers1", usage = "输入目标数据图层名称")
+    private String layers1 = "";
+
     @Option(name = "-joinFields1", usage = "输入目标数据连接字段", required = true)
     private String joinFields1;   // separate by ","
     /**
@@ -61,6 +64,9 @@ public class FieldJoinArgs {
 
     @Option(name = "-input2", usage = "输入范围数据路径", required = true)
     private String input2;
+
+    @Option(name = "-layers2", usage = "输入范围数据图层名称")
+    private String layers2 = "";
 
     @Option(name = "-joinFields2", usage = "输入范围数据连接字段", required = true)
     private String joinFields2;   // separate by ","

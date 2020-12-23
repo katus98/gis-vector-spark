@@ -25,6 +25,9 @@ public class FieldTextSelectorArgs {
     @Option(name = "-input", usage = "输入目标数据路径", required = true)
     private String input;
 
+    @Option(name = "-layers", usage = "输入目标数据图层名称")
+    private String layers = "";
+
     @Option(name = "-selectField", usage = "输入目标数据筛选字符串字段", required = true)
     private String selectField;
     /**

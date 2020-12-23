@@ -20,7 +20,7 @@ import java.util.Objects;
  * @since 1.2
  */
 @Getter
-public class FileGeoDatabaseReader {
+public class GeoDatabaseReader {
     private final String path;
     private final String layerName;
     private Layer layer;
@@ -28,7 +28,7 @@ public class FileGeoDatabaseReader {
     private CoordinateReferenceSystem crs = null;
     private static final Boolean WITH_FID = false;
 
-    public FileGeoDatabaseReader(String pathWithLayerName) {
+    public GeoDatabaseReader(String pathWithLayerName) {
         pathWithLayerName = pathWithLayerName.replace("file://", "");
         int index = pathWithLayerName.lastIndexOf(":");
         this.path = pathWithLayerName.substring(0, index);
@@ -36,7 +36,7 @@ public class FileGeoDatabaseReader {
         initAll();
     }
 
-    public FileGeoDatabaseReader(String path, String layerName) {
+    public GeoDatabaseReader(String path, String layerName) {
         this.path = path.replace("file://", "");
         this.layerName = layerName;
         initAll();

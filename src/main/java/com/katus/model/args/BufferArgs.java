@@ -24,6 +24,9 @@ public class BufferArgs {
     @Option(name = "-input", usage = "输入目标数据路径", required = true)
     private String input;
 
+    @Option(name = "-layers", usage = "输入目标数据图层名称")
+    private String layers = "";
+
     @Option(name = "-distance", usage = "缓冲区距离", required = true)
     private String distance;
 

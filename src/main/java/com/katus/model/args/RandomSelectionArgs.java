@@ -24,6 +24,9 @@ public class RandomSelectionArgs {
     @Option(name = "-input", usage = "输入目标数据路径", required = true)
     private String input;
 
+    @Option(name = "-layers", usage = "输入目标数据图层名称")
+    private String layers = "";
+
     @Option(name = "-ratio", usage = "输入目标数据抽样比率", required = true)
     private String ratio;   // 0-1
     /**

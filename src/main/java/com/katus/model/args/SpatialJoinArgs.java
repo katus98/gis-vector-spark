@@ -38,6 +38,9 @@ public class SpatialJoinArgs {
 
     @Option(name = "-input1", usage = "输入数据1路径", required = true)
     private String input1;
+
+    @Option(name = "-layers1", usage = "输入数据1图层名称")
+    private String layers1 = "";
     /**
      * The below is only for specific inputs, not always takes effect.
      */
@@ -67,6 +70,9 @@ public class SpatialJoinArgs {
 
     @Option(name = "-input2", usage = "输入数据2路径", required = true)
     private String input2;
+
+    @Option(name = "-layers2", usage = "输入数据2图层名称")
+    private String layers2 = "";
     /**
      * The below is only for specific inputs, not always takes effect.
      */

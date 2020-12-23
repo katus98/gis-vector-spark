@@ -24,6 +24,9 @@ public class DissolveArgs {
     @Option(name = "-input", usage = "输入目标数据路径", required = true)
     private String input;
 
+    @Option(name = "-layers", usage = "输入目标数据图层名称")
+    private String layers = "";
+
     @Option(name = "-dissolveFields", usage = "输入目标数据溶解字段")
     private String dissolveFields = "";   // separate by ","
     /**
