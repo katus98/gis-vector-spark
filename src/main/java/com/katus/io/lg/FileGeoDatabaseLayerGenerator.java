@@ -2,38 +2,45 @@ package com.katus.io.lg;
 
 import com.katus.entity.Feature;
 import com.katus.entity.Layer;
-import com.katus.io.reader.ShapeFileReader;
-import com.katus.util.CrsUtil;
+import com.katus.io.reader.FileGeoDatabaseReader;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SparkSession;
-import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import scala.Tuple2;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 /**
  * @author Sun Katus
- * @version 1.0, 2020-11-11
+ * @version 1.0, 2020-12-23
+ * @since 1.2
  */
-public class ShapeFileLayerGenerator extends LayerGenerator {
-    private final String fileURI;
+public class FileGeoDatabaseLayerGenerator extends LayerGenerator {
+    private final List<String> pathWithLayerNames;
 
-    public ShapeFileLayerGenerator(SparkSession ss, String fileURI) {
+    public FileGeoDatabaseLayerGenerator(SparkSession ss, String path, String[] layers) {
         super(ss);
-        this.fileURI = fileURI;
+        this.pathWithLayerNames = new ArrayList<>();
+        for (String layer : layers) {
+            this.pathWithLayerNames.add(path + ":" + layer);
+        }
+    }
+
+    public FileGeoDatabaseLayerGenerator(SparkSession ss, String[] pathWithLayerNames) {
+        super(ss);
+        this.pathWithLayerNames = new ArrayList<>(Arrays.asList(pathWithLayerNames));
     }
 
     @Override
-    public Layer generate() throws FactoryException {
+    public Layer generate() {
         JavaSparkContext jsc = JavaSparkContext.fromSparkContext(ss.sparkContext());
-        JavaPairRDD<String, Feature> featuresWithInfo = jsc.parallelize(Collections.singletonList(fileURI))
-                .flatMapToPair(filename -> {
-                    ShapeFileReader reader = new ShapeFileReader(filename);
+        JavaPairRDD<String, Feature> featuresWithInfo = jsc.parallelize(pathWithLayerNames)
+                .flatMapToPair(pathWithLayerName -> {
+                    FileGeoDatabaseReader reader = new FileGeoDatabaseReader(pathWithLayerName);
                     List<Tuple2<String, Feature>> result = new ArrayList<>();
                     Feature feature = reader.next();
                     String type = feature != null ? feature.getGeometry().getGeometryType() : "";
@@ -41,7 +48,6 @@ public class ShapeFileLayerGenerator extends LayerGenerator {
                         result.add(new Tuple2<>(feature.getFid(), feature));
                         feature = reader.next();
                     }
-                    reader.close();
                     feature = new Feature();
                     feature.setAttribute("fieldNames", reader.getFieldNames());
                     feature.setAttribute("crs", reader.getCrs());
@@ -51,11 +57,10 @@ public class ShapeFileLayerGenerator extends LayerGenerator {
                 })
                 .repartition(jsc.defaultParallelism())
                 .cache();
-        long featureCount = featuresWithInfo.count() - 1;
+        long featureCount = featuresWithInfo.count() - pathWithLayerNames.size();
         Map<String, Object> attributes = featuresWithInfo.filter(pairItem -> pairItem._1().equals("###INFO###")).first()._2().getAttributes();
         JavaPairRDD<String, Feature> features = featuresWithInfo.filter(pairItem -> !pairItem._1().equals("###INFO###")).cache();
         featuresWithInfo.unpersist();
-        CoordinateReferenceSystem crs = CrsUtil.getByESRIWkt((String) attributes.get("crs"));
-        return Layer.create(features, (String[]) attributes.get("fieldNames"), crs, (String) attributes.get("geometryType"), featureCount);
+        return Layer.create(features, (String[]) attributes.get("fieldNames"), (CoordinateReferenceSystem) attributes.get("crs"), (String) attributes.get("geometryType"), featureCount);
     }
 }
