@@ -68,6 +68,7 @@ A framework for basic parallel model of geographic vector data based on Apache S
 ### Data Input
 
 - [x] ESRI Shape File (v1.0)
+- [x] File / Personal Geo Database (v1.2, Need GDAL)
 - [x] Relational Database
   - [x] MySQL Database (v1.1)
   - [x] PostgreSQL Database (v1.1)
