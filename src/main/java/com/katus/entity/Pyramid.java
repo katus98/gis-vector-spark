@@ -10,7 +10,7 @@ import java.io.Serializable;
 
 /**
  * @author Sun Katus
- * @version 1.0, 2020-11-13
+ * @version 1.1, 2021-01-12
  */
 @Getter
 public class Pyramid implements Serializable {
@@ -38,8 +38,17 @@ public class Pyramid implements Serializable {
                 this.extent = new Envelope(CrsExtent.EXTENT_4326[0], CrsExtent.EXTENT_4326[1], CrsExtent.EXTENT_4326[2], CrsExtent.EXTENT_4326[3]);
                 break;
         }
-        gridSize[0] = Math.ceil((extent.getMaxX() - extent.getMinX()) / n * 1000) / 1000;
-        gridSize[1] = Math.ceil((extent.getMaxY() - extent.getMinY()) / n * 1000) / 1000;
+        this.gridSize[0] = Math.ceil((extent.getMaxX() - extent.getMinX()) / n * 1000) / 1000;
+        this.gridSize[1] = Math.ceil((extent.getMaxY() - extent.getMinY()) / n * 1000) / 1000;
+    }
+
+    public Pyramid(Double[] extent, int z) {
+        this.extent = new Envelope(extent[0], extent[1], extent[2], extent[3]);
+        this.z = z > 0 && z <= 20 ? z : 10;
+        int n = 1 << this.z;
+        this.gridSize = new Double[2];
+        this.gridSize[0] = Math.ceil((this.extent.getMaxX() - this.extent.getMinX()) / n * 1000) / 1000;
+        this.gridSize[1] = Math.ceil((this.extent.getMaxY() - this.extent.getMinY()) / n * 1000) / 1000;
     }
 
     public Envelope getTile(int numX, int numY) {

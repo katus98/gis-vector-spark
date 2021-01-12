@@ -8,6 +8,8 @@ import com.katus.io.lg.TextFileLayerGenerator;
 import com.katus.io.reader.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.spark.sql.SparkSession;
+import org.locationtech.jts.geom.Envelope;
+import org.opengis.referencing.FactoryException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -90,5 +92,14 @@ public final class InputUtil {
         }
         layer = generator.generate();
         return layer;
+    }
+
+    public static Layer makeLayer(SparkSession ss, String table, Envelope range, String[] geometryFields, String crs) throws FactoryException {
+        String filterFormat = "(SELECT * FROM %s WHERE ST_Intersects(ST_GeomFromText(" + geometryFields[0] + "), ST_GeomFromText('" + TileUtil.getPolygonWkt(range) +"'))) AS t";
+        CitusPostgreSQLReader reader = new CitusPostgreSQLReader(connectionProp.getProperty("postgresql.url"), new String[]{table}, connectionProp.getProperty("postgresql.user"),
+                connectionProp.getProperty("postgresql.password"), geometryFields, crs, true, "POLYGON");
+        reader.updateTableFilter(filterFormat);
+        RelationalDatabaseLayerGenerator generator = new RelationalDatabaseLayerGenerator(ss, reader);
+        return generator.generate();
     }
 }

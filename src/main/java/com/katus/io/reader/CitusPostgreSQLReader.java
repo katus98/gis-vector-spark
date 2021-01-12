@@ -13,11 +13,12 @@ import java.util.Map;
 
 /**
  * @author Sun Katus
- * @version 1.0, 2020-12-19
+ * @version 1.1, 2021-01-12
  * @since 1.2
  */
 public class CitusPostgreSQLReader extends PostgreSQLReader {
     private final Map<String, List<Tuple2<String, String>>> sharedMaps;
+    private String filterFormat = "";
 
     public CitusPostgreSQLReader(String url, String[] tables, String username, String password, String[] geometryFields, String crs, Boolean isWkt, String geometryType) {
         super(url, tables, username, password, "", geometryFields, crs, isWkt, geometryType);
@@ -62,5 +63,15 @@ public class CitusPostgreSQLReader extends PostgreSQLReader {
             df.union(readTable(ss, tuple2._2(), tuple2._1()));
         }
         return df;
+    }
+
+    public void updateTableFilter(String filterFormat) {
+        this.filterFormat = filterFormat;
+        for (Map.Entry<String, List<Tuple2<String, String>>> entry : sharedMaps.entrySet()) {
+            List<Tuple2<String, String>> list = entry.getValue();
+            for (int i = 0; i < list.size(); i++) {
+                list.set(i, new Tuple2<>(list.get(i)._1(), String.format(filterFormat, list.get(i)._2())));
+            }
+        }
     }
 }
