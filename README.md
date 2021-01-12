@@ -30,13 +30,13 @@ A framework for basic parallel model of geographic vector data based on Apache S
 - [ ] Simplify
 - [ ] Voronoi Polygons
 
-### Field Tools
+### Attribute Tools
 
-- [x] Field Join (v1.0)
-- [x] Field Selector
-  - [x] Field Numerical Selector (v1.0)
-  - [x] Field Text Selector (v1.0)
-- [x] Field Statistics (v1.0)
+- [x] Join (v1.0)
+- [x] Selector
+  - [x] Numerical Selector (v1.0)
+  - [x] Text Selector (v1.0)
+- [x] Statistics (v1.0)
 - [ ] Unique Values
 
 ### Research Tools
