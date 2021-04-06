@@ -1,11 +1,11 @@
 package com.katus.model.base.args;
 
-import com.katus.entity.args.Input;
-import com.katus.entity.args.Output;
+import com.katus.entity.io.Input;
+import com.katus.entity.io.Output;
 import lombok.Getter;
 
 /**
- * @author Sun Katus
+ * @author SUN Katus
  * @version 1.0, 2021-01-19
  * @since 2.0
  */
@@ -18,7 +18,7 @@ public abstract class BinaryArgs extends Args {
         super(args);
         this.input1 = new Input(args, "1");
         this.input2 = new Input(args, "2");
-        this.output = new Output(args, "");
+        this.output = new Output(args);
     }
 
     @Override

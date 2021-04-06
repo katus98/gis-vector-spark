@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @author Sun Katus
+ * @author SUN Katus
  * @version 1.0, 2021-01-19
  * @since 2.0
  */

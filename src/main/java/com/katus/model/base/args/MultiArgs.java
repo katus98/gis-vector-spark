@@ -1,10 +1,10 @@
 package com.katus.model.base.args;
 
-import com.katus.entity.args.Input;
-import com.katus.entity.args.Output;
+import com.katus.entity.io.Input;
+import com.katus.entity.io.Output;
 
 /**
- * @author Sun Katus
+ * @author SUN Katus
  * @version 1.0, 2021-01-19
  * @since 2.0
  */

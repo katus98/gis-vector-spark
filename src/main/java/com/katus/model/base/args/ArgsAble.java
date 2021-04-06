@@ -1,12 +1,12 @@
 package com.katus.model.base.args;
 
-import com.katus.entity.args.Input;
-import com.katus.entity.args.Output;
+import com.katus.entity.io.Input;
+import com.katus.entity.io.Output;
 
 import java.util.Map;
 
 /**
- * @author Sun Katus
+ * @author SUN Katus
  * @version 1.0, 2021-01-13
  * @since 2.0
  */

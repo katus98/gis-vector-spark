@@ -1,5 +1,7 @@
-package com.katus.entity;
+package com.katus.entity.data;
 
+import com.katus.entity.LayerMetadata;
+import com.katus.entity.Pyramid;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.spark.api.java.JavaPairRDD;

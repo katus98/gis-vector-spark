@@ -1,34 +1,35 @@
-package com.katus.entity.args;
+package com.katus.entity.io;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Field;
 
 /**
- * @author Sun Katus
+ * @author SUN Katus
  * @version 1.0, 2021-01-13
  * @since 2.0
  */
-@Getter
-@Setter
+@Data
 @Slf4j
-@ToString
-public class Output {
-    private String destination = "";
+public class Input {
+    private String source = "";
     private String header = "true";
     private String geometryFormat = "wkt";
-    private String geometryField = "wkt";
+    private String geometryFields = "wkt";
+    private String geometryType = "LineString";
     private String separator = "\t";
     private String charset = "UTF-8";
     private String crs = "4326";
 
-    public Output(String[] args, String postfix) {
+    public Input(String[] args) {
+        this(args, "");
+    }
+
+    public Input(String[] args, String postfix) {
         for (int i = 0; i < args.length; i+=2) {
-            if (args[i].startsWith("-output_") && args[i].endsWith(postfix)) {
-                String fieldName = args[i].substring(8, args[i].length() - postfix.length());
+            if (args[i].startsWith("-input_") && args[i].endsWith(postfix)) {
+                String fieldName = args[i].substring(7, args[i].length() - postfix.length());
                 try {
                     Field field = this.getClass().getDeclaredField(fieldName);
                     field.setAccessible(true);
@@ -41,6 +42,6 @@ public class Output {
     }
 
     public Boolean isValid() {
-        return !destination.isEmpty();
+        return !source.isEmpty();
     }
 }

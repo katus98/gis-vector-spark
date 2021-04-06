@@ -1,4 +1,4 @@
-package com.katus.entity;
+package com.katus.entity.data;
 
 import com.katus.constant.GeomConstant;
 import lombok.Getter;

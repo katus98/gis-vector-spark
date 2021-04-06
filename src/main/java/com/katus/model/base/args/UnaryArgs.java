@@ -1,11 +1,11 @@
 package com.katus.model.base.args;
 
-import com.katus.entity.args.Input;
-import com.katus.entity.args.Output;
+import com.katus.entity.io.Input;
+import com.katus.entity.io.Output;
 import lombok.Getter;
 
 /**
- * @author Sun Katus
+ * @author SUN Katus
  * @version 1.0, 2021-01-19
  * @since 2.0
  */
@@ -16,8 +16,8 @@ public abstract class UnaryArgs extends Args {
 
     protected UnaryArgs(String[] args) {
         super(args);
-        this.input = new Input(args, "");
-        this.output = new Output(args, "");
+        this.input = new Input(args);
+        this.output = new Output(args);
     }
 
     @Override
