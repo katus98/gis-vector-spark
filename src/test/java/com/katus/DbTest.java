@@ -1,6 +1,6 @@
 package com.katus;
 
-import com.katus.entity.Layer;
+import com.katus.entity.data.Layer;
 import com.katus.io.lg.RelationalDatabaseLayerGenerator;
 import com.katus.io.reader.PostgreSQLReader;
 import com.katus.io.writer.LayerTextFileWriter;

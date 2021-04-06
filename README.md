@@ -136,9 +136,9 @@ A framework for basic parallel model of geographic vector data based on Apache S
 
 ### Project Manager
 
-+ Sun Katus
++ SUN Katus
 
 ### Model Author
 
-+ Sun Katus
-+ Wang Mengxiao (wmx)
++ SUN Katus
++ WANG Mengxiao

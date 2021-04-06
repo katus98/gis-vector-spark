@@ -1,7 +1,7 @@
 package com.katus.model.gpt;
 
-import com.katus.entity.Feature;
-import com.katus.entity.Layer;
+import com.katus.entity.data.Feature;
+import com.katus.entity.data.Layer;
 import com.katus.entity.LayerMetadata;
 import com.katus.io.writer.LayerTextFileWriter;
 import com.katus.model.gpt.args.DissolveArgs;
@@ -26,28 +26,26 @@ public class Dissolve {
         SparkSession ss = SparkUtil.getSparkSession();
 
         log.info("Setup arguments");
-        DissolveArgs mArgs = DissolveArgs.initArgs(args);
-        if (mArgs == null) {
-            String msg = "Init Dissolve Args failed, exit!";
+        DissolveArgs mArgs = new DissolveArgs(args);
+        if (!mArgs.isValid()) {
+            String msg = "Dissolve Args are not valid, exit!";
             log.error(msg);
             throw new RuntimeException(msg);
         }
 
         log.info("Make layers");
-        Layer targetLayer = InputUtil.makeLayer(ss, mArgs.getInput(), mArgs.getLayers().split(","), Boolean.valueOf(mArgs.getHasHeader()),
-                Boolean.valueOf(mArgs.getIsWkt()), mArgs.getGeometryFields().split(","), mArgs.getSeparator(),
-                mArgs.getCrs(), mArgs.getCharset(), mArgs.getGeometryType(), mArgs.getSerialField());
+        Layer inputLayer = InputUtil.makeLayer(ss, mArgs.getInput());
 
         log.info("Prepare calculation");
         String[] dissolveFields = mArgs.getDissolveFields().split(",");
         if (dissolveFields[0].isEmpty()) dissolveFields = new String[0];
 
         log.info("Start Calculation");
-        Layer layer = dissolve(targetLayer, dissolveFields);
+        Layer layer = dissolve(inputLayer, dissolveFields);
 
         log.info("Output result");
-        LayerTextFileWriter writer = new LayerTextFileWriter(mArgs.getOutput());
-        writer.writeToFileByPartCollect(layer, Boolean.parseBoolean(mArgs.getNeedHeader()), false, true);
+        LayerTextFileWriter writer = new LayerTextFileWriter(mArgs.getOutput().getDestination());
+        writer.writeToFileByPartCollect(layer, Boolean.parseBoolean(mArgs.getOutput().getHeader()), false, true);
 
         ss.close();
     }

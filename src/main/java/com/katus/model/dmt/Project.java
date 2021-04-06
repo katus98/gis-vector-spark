@@ -1,6 +1,6 @@
 package com.katus.model.dmt;
 
-import com.katus.entity.Layer;
+import com.katus.entity.data.Layer;
 import com.katus.io.writer.LayerTextFileWriter;
 import com.katus.model.dmt.args.ProjectArgs;
 import com.katus.util.CrsUtil;
@@ -22,25 +22,23 @@ public class Project {
         SparkSession ss = SparkUtil.getSparkSession();
 
         log.info("Setup arguments");
-        ProjectArgs mArgs = ProjectArgs.initArgs(args);
-        if (mArgs == null) {
-            String msg = "Init Project Args failed, exit!";
+        ProjectArgs mArgs = new ProjectArgs(args);
+        if (!mArgs.isValid()) {
+            String msg = "Project Args are not valid, exit!";
             log.error(msg);
             throw new RuntimeException(msg);
         }
 
         log.info("Make layers");
-        Layer targetLayer = InputUtil.makeLayer(ss, mArgs.getInput(), mArgs.getLayers().split(","), Boolean.valueOf(mArgs.getHasHeader()),
-                Boolean.valueOf(mArgs.getIsWkt()), mArgs.getGeometryFields().split(","), mArgs.getSeparator(),
-                mArgs.getCrs(), mArgs.getCharset(), mArgs.getGeometryType(), mArgs.getSerialField());
+        Layer targetLayer = InputUtil.makeLayer(ss, mArgs.getInput());
 
         log.info("Start Calculation");
-        CoordinateReferenceSystem tarCrs = CrsUtil.getByCode(mArgs.getTargetCrs());
+        CoordinateReferenceSystem tarCrs = CrsUtil.getByCode(mArgs.getCrs());
         Layer layer = targetLayer.getMetadata().getCrs().equals(tarCrs) ? targetLayer : targetLayer.project(tarCrs);
 
         log.info("Output result");
-        LayerTextFileWriter writer = new LayerTextFileWriter(mArgs.getOutput());
-        writer.writeToFileByPartCollect(layer, Boolean.parseBoolean(mArgs.getNeedHeader()), false, true);
+        LayerTextFileWriter writer = new LayerTextFileWriter(mArgs.getOutput().getDestination());
+        writer.writeToFileByPartCollect(layer, Boolean.parseBoolean(mArgs.getOutput().getHeader()), false, true);
 
         ss.close();
     }

@@ -1,6 +1,7 @@
 package com.katus.util;
 
-import com.katus.entity.Layer;
+import com.katus.entity.data.Layer;
+import com.katus.entity.io.Input;
 import com.katus.io.lg.*;
 import com.katus.io.reader.*;
 import lombok.extern.slf4j.Slf4j;
@@ -79,5 +80,11 @@ public final class InputUtil {
         }
         layer = generator.generate();
         return layer;
+    }
+
+    public static Layer makeLayer(SparkSession ss, Input input) throws Exception {
+        return makeLayer(ss, input.getSource(), input.getLayers().split(","), Boolean.valueOf(input.getHeader()),
+                input.getGeometryFormat().equals("wkt"), input.getGeometryFields().split(","), input.getSeparator(),
+                input.getCrs(), input.getCharset(), input.getGeometryType(), input.getSerialField());
     }
 }

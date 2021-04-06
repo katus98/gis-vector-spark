@@ -1,8 +1,8 @@
 package com.katus.model.at;
 
 import com.katus.constant.TextRelationship;
-import com.katus.entity.Feature;
-import com.katus.entity.Layer;
+import com.katus.entity.data.Feature;
+import com.katus.entity.data.Layer;
 import com.katus.entity.LayerMetadata;
 import com.katus.io.writer.LayerTextFileWriter;
 import com.katus.model.at.args.TextSelectorArgs;
@@ -23,17 +23,15 @@ public class TextSelector {
         SparkSession ss = SparkUtil.getSparkSession();
 
         log.info("Setup arguments");
-        TextSelectorArgs mArgs = TextSelectorArgs.initArgs(args);
-        if (mArgs == null) {
-            String msg = "Init Field Text Selector Args failed, exit!";
+        TextSelectorArgs mArgs = new TextSelectorArgs(args);
+        if (!mArgs.isValid()) {
+            String msg = "Field Text Selector Args are not valid, exit!";
             log.error(msg);
             throw new RuntimeException(msg);
         }
 
         log.info("Make layers");
-        Layer targetLayer = InputUtil.makeLayer(ss, mArgs.getInput(), mArgs.getLayers().split(","), Boolean.valueOf(mArgs.getHasHeader()),
-                Boolean.valueOf(mArgs.getIsWkt()), mArgs.getGeometryFields().split(","), mArgs.getSeparator(),
-                mArgs.getCrs(), mArgs.getCharset(), mArgs.getGeometryType(), mArgs.getSerialField());
+        Layer targetLayer = InputUtil.makeLayer(ss, mArgs.getInput());
 
         log.info("Prepare calculation");
         String selectField = mArgs.getSelectField();
@@ -44,8 +42,8 @@ public class TextSelector {
         Layer layer = fieldTextSelect(targetLayer, selectField, relationShip, keywords);
 
         log.info("Output result");
-        LayerTextFileWriter writer = new LayerTextFileWriter(mArgs.getOutput());
-        writer.writeToFileByPartCollect(layer, Boolean.parseBoolean(mArgs.getNeedHeader()), false, true);
+        LayerTextFileWriter writer = new LayerTextFileWriter(mArgs.getOutput().getDestination());
+        writer.writeToFileByPartCollect(layer, Boolean.parseBoolean(mArgs.getOutput().getHeader()), false, true);
 
         ss.close();
     }

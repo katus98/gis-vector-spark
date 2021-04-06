@@ -12,7 +12,7 @@ public abstract class MultiArgs extends Args {
     protected Input[] inputs;
     protected Output[] outputs;
 
-    public MultiArgs(String[] args, int inputNum, int outputNum) {
+    protected MultiArgs(String[] args, int inputNum, int outputNum) {
         super(args);
         this.inputs = new Input[inputNum];
         this.outputs = new Output[outputNum];

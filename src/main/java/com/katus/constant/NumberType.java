@@ -3,8 +3,8 @@ package com.katus.constant;
 import java.io.Serializable;
 
 /**
- * @author Sun Katus
- * @version 1.0, 2020-11-18
+ * @author SUN Katus
+ * @version 1.1, 2021-04-06
  */
 public enum NumberType implements Serializable {
     SHORT,
@@ -46,5 +46,19 @@ public enum NumberType implements Serializable {
 
     public static NumberType getByFieldName(String fieldName) {
         return NumberType.valueOf(fieldName.substring(fieldName.lastIndexOf("(") + 1, fieldName.lastIndexOf(")")).toUpperCase());
+    }
+
+    public static boolean contains(String... names) {
+        for (String name : names) {
+            boolean flag = false;
+            for (NumberType type : NumberType.values()) {
+                if (type.name().equals(name.toUpperCase())) {
+                    flag = true;
+                    break;
+                }
+            }
+            if (!flag) return false;
+        }
+        return true;
     }
 }

@@ -1,70 +1,22 @@
 package com.katus.model.gpt.args;
 
+import com.katus.model.base.args.UnaryArgs;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
-import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.args4j.CmdLineParser;
-import org.kohsuke.args4j.Option;
 
 /**
- * @author Sun Katus
- * @version 1.2, 2020-12-08
+ * @author SUN Katus
+ * @version 2.0, 2021-04-06
  */
 @Getter
 @Setter
-@Slf4j
-public class DissolveArgs {
-    @Option(name = "-output", usage = "输出文件路径", required = true)
-    private String output;
-
-    @Option(name = "-needHeader", usage = "输出文件是否含有标题行")
-    private String needHeader = "true";   // true, false
-
-    @Option(name = "-input", usage = "输入目标数据路径", required = true)
-    private String input;
-
-    @Option(name = "-layers", usage = "输入目标数据图层名称")
-    private String layers = "";
-
-    @Option(name = "-dissolveFields", usage = "输入目标数据溶解字段")
-    private String dissolveFields = "";   // separate by ","
+public class DissolveArgs extends UnaryArgs {
     /**
-     * The below is only for specific inputs, not always takes effect.
+     * 目标数据溶解字段, ","分隔, 默认全部溶解
      */
-    @Option(name = "-hasHeader", usage = "输入目标数据是否含有标题行")
-    private String hasHeader = "true";   // true, false
+    private String dissolveFields = "";
 
-    @Option(name = "-isWkt", usage = "输入目标数据几何列是否是WKT")
-    private String isWkt = "true";   // true, false
-
-    @Option(name = "-geometryFields", usage = "输入目标数据几何列")
-    private String geometryFields = "wkt";   // separate by ","
-
-    @Option(name = "-geometryType", usage = "输入目标数据几何类型")
-    private String geometryType = "LineString";   // Polygon, LineString, Point
-
-    @Option(name = "-separator", usage = "输入目标数据分隔符")
-    private String separator = "\t";
-
-    @Option(name = "-crs", usage = "输入目标数据地理参考")
-    private String crs = "4326";
-
-    @Option(name = "-charset", usage = "输入目标数据字符集")
-    private String charset = "UTF-8";   // UTF-8, GBK
-
-    @Option(name = "-serialField", usage = "输入目标数据顺序自增字段")
-    private String serialField = "";
-
-    public static DissolveArgs initArgs(String[] args) {
-        DissolveArgs mArgs = new DissolveArgs();
-        CmdLineParser parser = new CmdLineParser(mArgs);
-        try {
-            parser.parseArgument(args);
-            return mArgs;
-        } catch (CmdLineException e) {
-            log.error(e.getLocalizedMessage());
-            return null;
-        }
+    public DissolveArgs(String[] args) {
+        super(args);
     }
 }

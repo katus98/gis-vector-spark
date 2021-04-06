@@ -1,7 +1,7 @@
 package com.katus.model.gpt;
 
-import com.katus.entity.Feature;
-import com.katus.entity.Layer;
+import com.katus.entity.data.Feature;
+import com.katus.entity.data.Layer;
 import com.katus.entity.LayerMetadata;
 import com.katus.io.writer.LayerTextFileWriter;
 import com.katus.model.dmt.Merge;
@@ -19,7 +19,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 /**
- * @author Wang Mengxiao (wmx), Sun Katus
+ * @author WANG Mengxiao, SUN Katus
  * @version 1.2, 2020-12-12
  */
 @Slf4j
@@ -29,45 +29,38 @@ public class Union {
         SparkSession ss = SparkUtil.getSparkSession();
 
         log.info("Setup arguments");
-        UnionArgs mArgs = UnionArgs.initArgs(args);
-        if (mArgs == null) {
-            String msg = "Init Union Args failed, exit!";
+        UnionArgs mArgs = new UnionArgs(args);
+        if (!mArgs.isValid()) {
+            String msg = "Union Args are not valid, exit!";
             log.error(msg);
             throw new RuntimeException(msg);
         }
 
         log.info("Make layers");
-        Layer layer1 = InputUtil.makeLayer(ss, mArgs.getInput1(), mArgs.getLayers1().split(","), Boolean.valueOf(mArgs.getHasHeader1()),
-                Boolean.valueOf(mArgs.getIsWkt1()), mArgs.getGeometryFields1().split(","), mArgs.getSeparator1(),
-                mArgs.getCrs1(), mArgs.getCharset1(), mArgs.getGeometryType1(), mArgs.getSerialField1());
-        Layer layer2 = InputUtil.makeLayer(ss, mArgs.getInput2(), mArgs.getLayers2().split(","), Boolean.valueOf(mArgs.getHasHeader2()),
-                Boolean.valueOf(mArgs.getIsWkt2()), mArgs.getGeometryFields2().split(","), mArgs.getSeparator2(),
-                mArgs.getCrs2(), mArgs.getCharset2(), mArgs.getGeometryType2(), mArgs.getSerialField2());
+        Layer inputLayer = InputUtil.makeLayer(ss, mArgs.getInput1());
+        Layer overlayLayer = InputUtil.makeLayer(ss, mArgs.getInput2());
 
         log.info("Dimension check");
-        if (GeometryUtil.getDimensionOfGeomType(layer1.getMetadata().getGeometryType()) !=
-                GeometryUtil.getDimensionOfGeomType(layer2.getMetadata().getGeometryType())) {
+        if (GeometryUtil.getDimensionOfGeomType(inputLayer.getMetadata().getGeometryType()) !=
+                GeometryUtil.getDimensionOfGeomType(overlayLayer.getMetadata().getGeometryType())) {
             String msg = "Two layers must have the same dimension, exit!";
             log.error(msg);
             throw new RuntimeException(msg);
         }
 
         log.info("Prepare calculation");
-        if (!mArgs.getCrs().equals(mArgs.getCrs1())) {
-            layer1 = layer1.project(CrsUtil.getByCode(mArgs.getCrs()));
+        if (!mArgs.getInput1().getCrs().equals(mArgs.getInput2().getCrs())) {
+            overlayLayer = overlayLayer.project(CrsUtil.getByCode(mArgs.getInput1().getCrs()));
         }
-        if (!mArgs.getCrs().equals(mArgs.getCrs2())) {
-            layer2 = layer2.project(CrsUtil.getByCode(mArgs.getCrs()));
-        }
-        layer1 = layer1.index();
-        layer2 = layer2.index();
+        inputLayer = inputLayer.index();
+        overlayLayer = overlayLayer.index();
 
         log.info("Start Calculation");
-        Layer layer = union(layer1, layer2);
+        Layer layer = union(inputLayer, overlayLayer);
 
         log.info("Output result");
-        LayerTextFileWriter writer = new LayerTextFileWriter(mArgs.getOutput());
-        writer.writeToFileByPartCollect(layer, Boolean.parseBoolean(mArgs.getNeedHeader()), false, true);
+        LayerTextFileWriter writer = new LayerTextFileWriter(mArgs.getOutput().getDestination());
+        writer.writeToFileByPartCollect(layer, Boolean.parseBoolean(mArgs.getOutput().getHeader()), false, true);
 
         ss.close();
     }

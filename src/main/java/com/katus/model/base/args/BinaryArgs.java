@@ -14,7 +14,7 @@ public abstract class BinaryArgs extends Args {
     protected Input input1, input2;
     protected Output output;
 
-    public BinaryArgs(String[] args) {
+    protected BinaryArgs(String[] args) {
         super(args);
         this.input1 = new Input(args, "1");
         this.input2 = new Input(args, "2");

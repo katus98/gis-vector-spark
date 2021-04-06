@@ -1,7 +1,7 @@
 package com.katus.io.lg;
 
-import com.katus.entity.Feature;
-import com.katus.entity.Layer;
+import com.katus.entity.data.Feature;
+import com.katus.entity.data.Layer;
 import com.katus.io.reader.GeoDatabaseReader;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;

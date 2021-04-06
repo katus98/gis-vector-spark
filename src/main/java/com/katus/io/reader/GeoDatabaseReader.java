@@ -1,6 +1,6 @@
 package com.katus.io.reader;
 
-import com.katus.entity.Feature;
+import com.katus.entity.data.Feature;
 import com.katus.util.CrsUtil;
 import com.katus.util.GeometryUtil;
 import lombok.Getter;

@@ -1,8 +1,8 @@
 package com.katus.model.at;
 
 import com.katus.constant.JoinType;
-import com.katus.entity.Feature;
-import com.katus.entity.Layer;
+import com.katus.entity.data.Feature;
+import com.katus.entity.data.Layer;
 import com.katus.entity.LayerMetadata;
 import com.katus.io.writer.LayerTextFileWriter;
 import com.katus.model.at.args.JoinArgs;
@@ -26,20 +26,16 @@ public class Join {
         SparkSession ss = SparkUtil.getSparkSession();
 
         log.info("Setup arguments");
-        JoinArgs mArgs = JoinArgs.initArgs(args);
-        if (mArgs == null) {
-            String msg = "Init Field Join Args failed, exit!";
+        JoinArgs mArgs = new JoinArgs(args);
+        if (!mArgs.isValid()) {
+            String msg = "Field Join Args are not valid, exit!";
             log.error(msg);
             throw new RuntimeException(msg);
         }
 
         log.info("Make layers");
-        Layer targetLayer = InputUtil.makeLayer(ss, mArgs.getInput1(), mArgs.getLayers1().split(","), Boolean.valueOf(mArgs.getHasHeader1()),
-                Boolean.valueOf(mArgs.getIsWkt1()), mArgs.getGeometryFields1().split(","), mArgs.getSeparator1(),
-                mArgs.getCrs1(), mArgs.getCharset1(), mArgs.getGeometryType1(), mArgs.getSerialField1());
-        Layer joinLayer = InputUtil.makeLayer(ss, mArgs.getInput2(), mArgs.getLayers2().split(","), Boolean.valueOf(mArgs.getHasHeader2()),
-                Boolean.valueOf(mArgs.getIsWkt2()), mArgs.getGeometryFields2().split(","), mArgs.getSeparator2(),
-                mArgs.getCrs2(), mArgs.getCharset2(), mArgs.getGeometryType2(), mArgs.getSerialField2());
+        Layer baseLayer = InputUtil.makeLayer(ss, mArgs.getInput1());
+        Layer joinLayer = InputUtil.makeLayer(ss, mArgs.getInput2());
 
         log.info("Prepare calculation");
         JoinType joinType = JoinType.valueOf(mArgs.getJoinType().trim().toUpperCase());
@@ -47,21 +43,21 @@ public class Join {
         String[] joinFields2 = mArgs.getJoinFields2().split(",");
 
         log.info("Start Calculation");
-        Layer layer = fieldJoin(targetLayer, joinLayer, joinType, joinFields1, joinFields2);
+        Layer layer = fieldJoin(baseLayer, joinLayer, joinType, joinFields1, joinFields2);
 
         log.info("Output result");
-        LayerTextFileWriter writer = new LayerTextFileWriter(mArgs.getOutput());
-        writer.writeToFileByPartCollect(layer, Boolean.parseBoolean(mArgs.getNeedHeader()), false, true);
+        LayerTextFileWriter writer = new LayerTextFileWriter(mArgs.getOutput().getDestination());
+        writer.writeToFileByPartCollect(layer, Boolean.parseBoolean(mArgs.getOutput().getHeader()), false, true);
 
         ss.close();
     }
 
-    public static Layer fieldJoin(Layer targetLayer, Layer joinLayer, JoinType joinType, String[] joinFields1, String[] joinFields2) {
-        LayerMetadata metadata1 = targetLayer.getMetadata();
+    public static Layer fieldJoin(Layer baseLayer, Layer joinLayer, JoinType joinType, String[] joinFields1, String[] joinFields2) {
+        LayerMetadata metadata1 = baseLayer.getMetadata();
         LayerMetadata metadata2 = joinLayer.getMetadata();
         String[] fieldNames = FieldUtil.merge(metadata1.getFieldNames(), metadata2.getFieldNames());
         int fieldNum = Math.min(joinFields1.length, joinFields2.length);
-        JavaPairRDD<String, Feature> result1 = targetLayer.mapToPair(pairItem -> {
+        JavaPairRDD<String, Feature> result1 = baseLayer.mapToPair(pairItem -> {
             Feature feature = pairItem._2();
             StringBuilder builder = new StringBuilder("Join:");
             for (int i = 0; i < fieldNum; i++) {

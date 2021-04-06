@@ -14,7 +14,7 @@ public abstract class TernaryArgs extends Args {
     protected Input input1, input2, input3;
     protected Output output;
 
-    public TernaryArgs(String[] args) {
+    protected TernaryArgs(String[] args) {
         super(args);
         this.input1 = new Input(args, "1");
         this.input2 = new Input(args, "2");

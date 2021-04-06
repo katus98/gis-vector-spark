@@ -14,6 +14,7 @@ import java.lang.reflect.Field;
 @Slf4j
 public class Input {
     private String source = "";
+    private String layers = "";
     private String header = "true";
     private String geometryFormat = "wkt";
     private String geometryFields = "wkt";
@@ -21,6 +22,7 @@ public class Input {
     private String separator = "\t";
     private String charset = "UTF-8";
     private String crs = "4326";
+    private String serialField = "";
 
     public Input(String[] args) {
         this(args, "");

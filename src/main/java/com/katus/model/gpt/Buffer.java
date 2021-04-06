@@ -1,7 +1,7 @@
 package com.katus.model.gpt;
 
-import com.katus.entity.Feature;
-import com.katus.entity.Layer;
+import com.katus.entity.data.Feature;
+import com.katus.entity.data.Layer;
 import com.katus.entity.LayerMetadata;
 import com.katus.io.writer.LayerTextFileWriter;
 import com.katus.model.gpt.args.BufferArgs;
@@ -14,7 +14,7 @@ import org.apache.spark.sql.SparkSession;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
- * @author Mengxiao Wang (wmx), Sun Katus
+ * @author WANG Mengxiao, SUN Katus
  * @version 1.2, 2020-12-14
  */
 @Slf4j
@@ -24,29 +24,27 @@ public class Buffer {
         SparkSession ss = SparkUtil.getSparkSession();
 
         log.info("Setup arguments");
-        BufferArgs mArgs = BufferArgs.initArgs(args);
-        if (mArgs == null) {
-            String msg = "Init Buffer Args failed, exit!";
+        BufferArgs mArgs = new BufferArgs(args);
+        if (!mArgs.isValid()) {
+            String msg = "Buffer Args are not valid, exit!";
             log.error(msg);
             throw new RuntimeException(msg);
         }
 
         log.info("Make layers");
-        Layer targetLayer = InputUtil.makeLayer(ss, mArgs.getInput(), mArgs.getLayers().split(","), Boolean.valueOf(mArgs.getHasHeader()),
-                Boolean.valueOf(mArgs.getIsWkt()), mArgs.getGeometryFields().split(","), mArgs.getSeparator(),
-                mArgs.getCrs(), mArgs.getCharset(), mArgs.getGeometryType(), mArgs.getSerialField());
+        Layer inputLayer = InputUtil.makeLayer(ss, mArgs.getInput());
 
         log.info("Prepare calculation");
-        CoordinateReferenceSystem oriCrs = targetLayer.getMetadata().getCrs();
-        if (!mArgs.getCrsUnit().isEmpty()) {
-            CoordinateReferenceSystem crsU = CrsUtil.getByCode(mArgs.getCrsUnit());
+        CoordinateReferenceSystem oriCrs = inputLayer.getMetadata().getCrs();
+        if (!mArgs.getCrs().isEmpty()) {
+            CoordinateReferenceSystem crsU = CrsUtil.getByCode(mArgs.getCrs());
             if (!oriCrs.equals(crsU)) {
-                targetLayer = targetLayer.project(crsU);
+                inputLayer = inputLayer.project(crsU);
             }
         }
 
         log.info("Start Calculation");
-        Layer layer = buffer(targetLayer, Double.parseDouble(mArgs.getDistance()));
+        Layer layer = buffer(inputLayer, Double.parseDouble(mArgs.getDistance()));
 
         log.info("Post calculation");
         if (!layer.getMetadata().getCrs().equals(oriCrs)) {
@@ -54,8 +52,8 @@ public class Buffer {
         }
 
         log.info("Output result");
-        LayerTextFileWriter writer = new LayerTextFileWriter(mArgs.getOutput());
-        writer.writeToFileByPartCollect(layer, Boolean.parseBoolean(mArgs.getNeedHeader()), false, true);
+        LayerTextFileWriter writer = new LayerTextFileWriter(mArgs.getOutput().getDestination());
+        writer.writeToFileByPartCollect(layer, Boolean.parseBoolean(mArgs.getOutput().getHeader()), false, true);
 
         ss.close();
     }

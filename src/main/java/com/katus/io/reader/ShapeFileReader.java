@@ -1,6 +1,6 @@
 package com.katus.io.reader;
 
-import com.katus.entity.Feature;
+import com.katus.entity.data.Feature;
 import com.katus.util.fs.FsManipulator;
 import com.katus.util.fs.FsManipulatorFactory;
 import lombok.Getter;

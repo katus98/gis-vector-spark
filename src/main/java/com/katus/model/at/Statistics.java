@@ -2,8 +2,8 @@ package com.katus.model.at;
 
 import com.katus.constant.NumberType;
 import com.katus.constant.StatisticalMethod;
-import com.katus.entity.Feature;
-import com.katus.entity.Layer;
+import com.katus.entity.data.Feature;
+import com.katus.entity.data.Layer;
 import com.katus.entity.LayerMetadata;
 import com.katus.io.writer.LayerTextFileWriter;
 import com.katus.model.at.args.StatisticsArgs;
@@ -30,17 +30,15 @@ public class Statistics {
         SparkSession ss = SparkUtil.getSparkSession();
 
         log.info("Setup arguments");
-        StatisticsArgs mArgs = StatisticsArgs.initArgs(args);
-        if (mArgs == null) {
-            String msg = "Init Field Statistics Args failed, exit!";
+        StatisticsArgs mArgs = new StatisticsArgs(args);
+        if (!mArgs.isValid()) {
+            String msg = "Field Statistics Args are not valid, exit!";
             log.error(msg);
             throw new RuntimeException(msg);
         }
 
         log.info("Make layers");
-        Layer targetLayer = InputUtil.makeLayer(ss, mArgs.getInput(), mArgs.getLayers().split(","), Boolean.valueOf(mArgs.getHasHeader()),
-                Boolean.valueOf(mArgs.getIsWkt()), mArgs.getGeometryFields().split(","), mArgs.getSeparator(),
-                mArgs.getCrs(), mArgs.getCharset(), mArgs.getGeometryType(), mArgs.getSerialField());
+        Layer inputLayer = InputUtil.makeLayer(ss, mArgs.getInput());
 
         log.info("Prepare calculation");
         String[] categoryFields = mArgs.getCategoryFields().split(",");
@@ -59,18 +57,18 @@ public class Statistics {
             if (!statisticalMethods.contains(StatisticalMethod.SUM)) statisticalMethods.add(StatisticalMethod.SUM);
             if (!statisticalMethods.contains(StatisticalMethod.COUNT)) statisticalMethods.add(StatisticalMethod.COUNT);
         }
-        if (!checkArgs(categoryFields, summaryFields, numberTypes, targetLayer.getMetadata().getFieldNames())) {
+        if (!checkArgs(categoryFields, summaryFields, numberTypes, inputLayer.getMetadata().getFieldNames())) {
             String msg = "Field Statistics Args are not illegal, exit!";
             log.error(msg);
             throw new RuntimeException(msg);
         }
 
         log.info("Start Calculation");
-        Layer layer = fieldStatistics(targetLayer, categoryFields, summaryFields, numberTypes, statisticalMethods);
+        Layer layer = fieldStatistics(inputLayer, categoryFields, summaryFields, numberTypes, statisticalMethods);
 
         log.info("Output result");
-        LayerTextFileWriter writer = new LayerTextFileWriter(mArgs.getOutput());
-        writer.writeToFileByPartCollect(layer, Boolean.parseBoolean(mArgs.getNeedHeader()), false, false);
+        LayerTextFileWriter writer = new LayerTextFileWriter(mArgs.getOutput().getDestination());
+        writer.writeToFileByPartCollect(layer, Boolean.parseBoolean(mArgs.getOutput().getHeader()), false, false);
 
         ss.close();
     }

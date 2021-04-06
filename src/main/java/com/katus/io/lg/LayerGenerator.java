@@ -1,6 +1,6 @@
 package com.katus.io.lg;
 
-import com.katus.entity.Layer;
+import com.katus.entity.data.Layer;
 import lombok.NoArgsConstructor;
 import org.apache.spark.sql.SparkSession;
 

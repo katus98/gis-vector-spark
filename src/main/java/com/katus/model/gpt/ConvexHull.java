@@ -1,7 +1,7 @@
 package com.katus.model.gpt;
 
-import com.katus.entity.Feature;
-import com.katus.entity.Layer;
+import com.katus.entity.data.Feature;
+import com.katus.entity.data.Layer;
 import com.katus.entity.LayerMetadata;
 import com.katus.io.writer.LayerTextFileWriter;
 import com.katus.model.gpt.args.ConvexHullArgs;
@@ -24,24 +24,22 @@ public class ConvexHull {
         SparkSession ss = SparkUtil.getSparkSession();
 
         log.info("Setup arguments");
-        ConvexHullArgs mArgs = ConvexHullArgs.initArgs(args);
-        if (mArgs == null) {
-            String msg = "Init Convex Hull Args failed, exit!";
+        ConvexHullArgs mArgs = new ConvexHullArgs(args);
+        if (!mArgs.isValid()) {
+            String msg = "Convex Hull Args are not valid, exit!";
             log.error(msg);
             throw new RuntimeException(msg);
         }
 
         log.info("Make layers");
-        Layer targetLayer = InputUtil.makeLayer(ss, mArgs.getInput(), mArgs.getLayers().split(","), Boolean.valueOf(mArgs.getHasHeader()),
-                Boolean.valueOf(mArgs.getIsWkt()), mArgs.getGeometryFields().split(","), mArgs.getSeparator(),
-                mArgs.getCrs(), mArgs.getCharset(), mArgs.getGeometryType(), mArgs.getSerialField());
+        Layer inputLayer = InputUtil.makeLayer(ss, mArgs.getInput());
 
         log.info("Start Calculation");
-        Layer layer = convexHull(targetLayer);
+        Layer layer = convexHull(inputLayer);
 
         log.info("Output result");
-        LayerTextFileWriter writer = new LayerTextFileWriter(mArgs.getOutput());
-        writer.writeToFileByPartCollect(layer, Boolean.parseBoolean(mArgs.getNeedHeader()), false, true);
+        LayerTextFileWriter writer = new LayerTextFileWriter(mArgs.getOutput().getDestination());
+        writer.writeToFileByPartCollect(layer, Boolean.parseBoolean(mArgs.getOutput().getHeader()), false, true);
 
         ss.close();
     }

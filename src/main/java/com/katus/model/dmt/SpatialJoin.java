@@ -2,8 +2,8 @@ package com.katus.model.dmt;
 
 import com.katus.constant.JoinType;
 import com.katus.constant.SpatialRelationship;
-import com.katus.entity.Feature;
-import com.katus.entity.Layer;
+import com.katus.entity.data.Feature;
+import com.katus.entity.data.Layer;
 import com.katus.entity.LayerMetadata;
 import com.katus.io.writer.LayerTextFileWriter;
 import com.katus.model.dmt.args.SpatialJoinArgs;
@@ -29,39 +29,32 @@ public class SpatialJoin {
         SparkSession ss = SparkUtil.getSparkSession();
 
         log.info("Setup arguments");
-        SpatialJoinArgs mArgs = SpatialJoinArgs.initArgs(args);
-        if (mArgs == null) {
-            String msg = "Init Spatial Join Args failed, exit!";
+        SpatialJoinArgs mArgs = new SpatialJoinArgs(args);
+        if (!mArgs.isValid()) {
+            String msg = "Spatial Join Args are not valid, exit!";
             log.error(msg);
             throw new RuntimeException(msg);
         }
 
         log.info("Make layers");
-        Layer targetLayer = InputUtil.makeLayer(ss, mArgs.getInput1(), mArgs.getLayers1().split(","), Boolean.valueOf(mArgs.getHasHeader1()),
-                Boolean.valueOf(mArgs.getIsWkt1()), mArgs.getGeometryFields1().split(","), mArgs.getSeparator1(),
-                mArgs.getCrs1(), mArgs.getCharset1(), mArgs.getGeometryType1(), mArgs.getSerialField1());
-        Layer joinLayer = InputUtil.makeLayer(ss, mArgs.getInput2(), mArgs.getLayers2().split(","), Boolean.valueOf(mArgs.getHasHeader2()),
-                Boolean.valueOf(mArgs.getIsWkt2()), mArgs.getGeometryFields2().split(","), mArgs.getSeparator2(),
-                mArgs.getCrs2(), mArgs.getCharset2(), mArgs.getGeometryType2(), mArgs.getSerialField2());
+        Layer baseLayer = InputUtil.makeLayer(ss, mArgs.getInput1());
+        Layer joinLayer = InputUtil.makeLayer(ss, mArgs.getInput2());
 
         log.info("Prepare calculation");
-        if (!mArgs.getCrs().equals(mArgs.getCrs1())) {
-            targetLayer = targetLayer.project(CrsUtil.getByCode(mArgs.getCrs()));
+        if (!mArgs.getInput1().getCrs().equals(mArgs.getInput2().getCrs())) {
+            joinLayer = joinLayer.project(CrsUtil.getByCode(mArgs.getInput1().getCrs()));
         }
-        if (!mArgs.getCrs().equals(mArgs.getCrs2())) {
-            joinLayer = joinLayer.project(CrsUtil.getByCode(mArgs.getCrs()));
-        }
-        targetLayer = targetLayer.index();
+        baseLayer = baseLayer.index();
         joinLayer = joinLayer.index();
         JoinType joinType = JoinType.valueOf(mArgs.getJoinType().trim().toUpperCase());
         SpatialRelationship relationship = SpatialRelationship.valueOf(mArgs.getSpatialRelationship().trim().toUpperCase());
 
         log.info("Start Calculation");
-        Layer layer = spatialJoin(targetLayer, joinLayer, joinType, relationship);
+        Layer layer = spatialJoin(baseLayer, joinLayer, joinType, relationship);
 
         log.info("Output result");
-        LayerTextFileWriter writer = new LayerTextFileWriter(mArgs.getOutput());
-        writer.writeToFileByPartCollect(layer, Boolean.parseBoolean(mArgs.getNeedHeader()), false, true);
+        LayerTextFileWriter writer = new LayerTextFileWriter(mArgs.getOutput().getDestination());
+        writer.writeToFileByPartCollect(layer, Boolean.parseBoolean(mArgs.getOutput().getHeader()), false, true);
 
         ss.close();
     }

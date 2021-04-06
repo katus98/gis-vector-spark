@@ -1,7 +1,7 @@
 package com.katus.io.writer;
 
-import com.katus.entity.Feature;
-import com.katus.entity.Layer;
+import com.katus.entity.data.Feature;
+import com.katus.entity.data.Layer;
 import com.katus.entity.LayerMetadata;
 import com.katus.util.fs.FsManipulator;
 import com.katus.util.fs.FsManipulatorFactory;

@@ -2,8 +2,8 @@ package com.katus.model.at;
 
 import com.katus.constant.NumberRelationship;
 import com.katus.constant.NumberType;
-import com.katus.entity.Feature;
-import com.katus.entity.Layer;
+import com.katus.entity.data.Feature;
+import com.katus.entity.data.Layer;
 import com.katus.entity.LayerMetadata;
 import com.katus.io.writer.LayerTextFileWriter;
 import com.katus.model.at.args.NumericalSelectorArgs;
@@ -26,17 +26,15 @@ public class NumericalSelector {
         SparkSession ss = SparkUtil.getSparkSession();
 
         log.info("Setup arguments");
-        NumericalSelectorArgs mArgs = NumericalSelectorArgs.initArgs(args);
-        if (mArgs == null) {
-            String msg = "Init Field Numerical Selector Args failed, exit!";
+        NumericalSelectorArgs mArgs = new NumericalSelectorArgs(args);
+        if (!mArgs.isValid()) {
+            String msg = "Field Numerical Selector Args are not valid, exit!";
             log.error(msg);
             throw new RuntimeException(msg);
         }
 
         log.info("Make layers");
-        Layer targetLayer = InputUtil.makeLayer(ss, mArgs.getInput(), mArgs.getLayers().split(","), Boolean.valueOf(mArgs.getHasHeader()),
-                Boolean.valueOf(mArgs.getIsWkt()), mArgs.getGeometryFields().split(","), mArgs.getSeparator(),
-                mArgs.getCrs(), mArgs.getCharset(), mArgs.getGeometryType(), mArgs.getSerialField());
+        Layer inputLayer = InputUtil.makeLayer(ss, mArgs.getInput());
 
         log.info("Prepare calculation");
         String selectField = mArgs.getSelectField();
@@ -46,11 +44,11 @@ public class NumericalSelector {
         Number threshold = (Number) valueOfMethod.invoke(null, mArgs.getThreshold());
 
         log.info("Start Calculation");
-        Layer layer = fieldNumericalSelect(targetLayer, selectField, relationship, numberType, threshold);
+        Layer layer = fieldNumericalSelect(inputLayer, selectField, relationship, numberType, threshold);
 
         log.info("Output result");
-        LayerTextFileWriter writer = new LayerTextFileWriter(mArgs.getOutput());
-        writer.writeToFileByPartCollect(layer, Boolean.parseBoolean(mArgs.getNeedHeader()), false, true);
+        LayerTextFileWriter writer = new LayerTextFileWriter(mArgs.getOutput().getDestination());
+        writer.writeToFileByPartCollect(layer, Boolean.parseBoolean(mArgs.getOutput().getHeader()), false, true);
 
         ss.close();
     }
