@@ -1,7 +1,6 @@
 package com.katus.model.at.args;
 
 import com.katus.constant.NumberRelationship;
-import com.katus.constant.NumberType;
 import com.katus.model.base.args.UnaryArgs;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,11 +22,6 @@ public class NumericalSelectorArgs extends UnaryArgs {
      */
     private String numberRelationship = "==";
     /**
-     * 数值字段类型
-     * @see NumberType
-     */
-    private String numberType = "Double";
-    /**
      * 筛选阈值
      */
     private String threshold = "";
@@ -39,6 +33,6 @@ public class NumericalSelectorArgs extends UnaryArgs {
     @Override
     public Boolean isValid() {
         return super.isValid() && !selectField.isEmpty() && NumberRelationship.getBySymbol(numberRelationship) != null
-                && NumberType.contains(numberType) && !threshold.isEmpty();
+                && !threshold.isEmpty();
     }
 }

@@ -90,6 +90,6 @@ public class Clip {
                     return f1;
                 })
                 .cache();
-        return Layer.create(result, metadata.getFieldNames(), metadata.getCrs(), metadata.getGeometryType(), result.count());
+        return Layer.create(result, metadata.getFields(), metadata.getCrs(), metadata.getGeometryType(), result.count());
     }
 }

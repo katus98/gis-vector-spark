@@ -55,6 +55,6 @@ public class ConvexHull {
                     return new Tuple2<>(pairItem._1(), feature);
                 })
                 .cache();
-        return Layer.create(result, metadata.getFieldNames(), metadata.getCrs(), geometryType, metadata.getFeatureCount());
+        return Layer.create(result, metadata.getFields(), metadata.getCrs(), geometryType, metadata.getFeatureCount());
     }
 }

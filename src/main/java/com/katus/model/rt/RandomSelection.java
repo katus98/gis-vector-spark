@@ -54,6 +54,6 @@ public class RandomSelection {
     public static Layer randomSelection(Layer layer, double fraction) {
         LayerMetadata metadata = layer.getMetadata();
         JavaPairRDD<String, Feature> result = layer.sample(false, fraction).cache();
-        return Layer.create(result, metadata.getFieldNames(), metadata.getCrs(), metadata.getGeometryType(), result.count());
+        return Layer.create(result, metadata.getFields(), metadata.getCrs(), metadata.getGeometryType(), result.count());
     }
 }

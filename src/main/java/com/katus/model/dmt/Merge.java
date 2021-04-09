@@ -1,6 +1,7 @@
 package com.katus.model.dmt;
 
 import com.katus.entity.data.Feature;
+import com.katus.entity.data.Field;
 import com.katus.entity.data.Layer;
 import com.katus.entity.LayerMetadata;
 import com.katus.io.writer.LayerTextFileWriter;
@@ -64,19 +65,19 @@ public class Merge {
     public static Layer merge(Layer layer1, Layer layer2) {
         LayerMetadata metadata1 = layer1.getMetadata();
         LayerMetadata metadata2 = layer2.getMetadata();
-        String[] fieldNames = FieldUtil.mergeToLeast(metadata1.getFieldNames(), metadata2.getFieldNames());
+        Field[] fields = FieldUtil.mergeToLeast(metadata1.getFields(), metadata2.getFields());
         JavaPairRDD<String, Feature> result1 = layer1.mapToPair(pairItem -> {
             Feature feature = pairItem._2();
-            feature.setAttributes(AttributeUtil.merge(fieldNames, feature.getAttributes(), new HashMap<>()));
+            feature.setAttributes(AttributeUtil.merge(fields, feature.getAttributes(), new HashMap<>()));
             return pairItem;
         });
         JavaPairRDD<String, Feature> result2 = layer2.mapToPair(pairItem -> {
             Feature feature = pairItem._2();
-            feature.setAttributes(AttributeUtil.merge(fieldNames, new HashMap<>(), feature.getAttributes()));
+            feature.setAttributes(AttributeUtil.merge(fields, new HashMap<>(), feature.getAttributes()));
             return pairItem;
         });
         JavaPairRDD<String, Feature> result = result1.union(result2).cache();
         long featureCount = metadata1.getFeatureCount() + metadata2.getFeatureCount();
-        return Layer.create(result, fieldNames, metadata1.getCrs(), metadata1.getGeometryType(), featureCount);
+        return Layer.create(result, fields, metadata1.getCrs(), metadata1.getGeometryType(), featureCount);
     }
 }

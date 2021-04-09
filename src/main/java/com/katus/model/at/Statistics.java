@@ -1,8 +1,9 @@
 package com.katus.model.at;
 
-import com.katus.constant.NumberType;
+import com.katus.constant.FieldMark;
 import com.katus.constant.StatisticalMethod;
 import com.katus.entity.data.Feature;
+import com.katus.entity.data.Field;
 import com.katus.entity.data.Layer;
 import com.katus.entity.LayerMetadata;
 import com.katus.io.writer.LayerTextFileWriter;
@@ -41,30 +42,33 @@ public class Statistics {
         Layer inputLayer = InputUtil.makeLayer(ss, mArgs.getInput());
 
         log.info("Prepare calculation");
-        String[] categoryFields = mArgs.getCategoryFields().split(",");
-        List<String> summaryFields = Arrays.asList(mArgs.getSummaryFields().split(","));
-        List<NumberType> numberTypes = Arrays
-                .stream(mArgs.getNumberTypes().split(","))
-                .map(String::toUpperCase)
-                .map(NumberType::valueOf)
-                .collect(Collectors.toList());
-        List<StatisticalMethod> statisticalMethods = Arrays
+        Field[] categoryFields = Arrays
+                .stream(mArgs.getCategoryFields().split(","))
+                .filter(str -> !str.isEmpty())
+                .map(inputLayer.getMetadata()::getFieldByName)
+                .toArray(Field[]::new);
+        Field[] summaryFields = Arrays
+                .stream(mArgs.getSummaryFields().split(","))
+                .map(inputLayer.getMetadata()::getFieldByName)
+                .filter(field -> {
+                    if (!Number.class.isAssignableFrom(field.getType().getClazz())) {
+                        log.warn("Field " + field.getName() + " is not a numerical field, has been taken out!");
+                        return false;
+                    } else return true;
+                })
+                .toArray(Field[]::new);
+        List<StatisticalMethod> statMethodList = Arrays
                 .stream(mArgs.getStatisticalMethods().split(","))
                 .map(String::toUpperCase)
                 .map(StatisticalMethod::valueOf)
                 .collect(Collectors.toList());
-        if (statisticalMethods.contains(StatisticalMethod.MEAN)) {
-            if (!statisticalMethods.contains(StatisticalMethod.SUM)) statisticalMethods.add(StatisticalMethod.SUM);
-            if (!statisticalMethods.contains(StatisticalMethod.COUNT)) statisticalMethods.add(StatisticalMethod.COUNT);
-        }
-        if (!checkArgs(categoryFields, summaryFields, numberTypes, inputLayer.getMetadata().getFieldNames())) {
-            String msg = "Field Statistics Args are not illegal, exit!";
-            log.error(msg);
-            throw new RuntimeException(msg);
+        if (statMethodList.contains(StatisticalMethod.MEAN)) {
+            if (!statMethodList.contains(StatisticalMethod.SUM)) statMethodList.add(StatisticalMethod.SUM);
+            if (!statMethodList.contains(StatisticalMethod.COUNT)) statMethodList.add(StatisticalMethod.COUNT);
         }
 
         log.info("Start Calculation");
-        Layer layer = fieldStatistics(inputLayer, categoryFields, summaryFields, numberTypes, statisticalMethods);
+        Layer layer = fieldStatistics(inputLayer, categoryFields, summaryFields, statMethodList);
 
         log.info("Output result");
         LayerTextFileWriter writer = new LayerTextFileWriter(mArgs.getOutput().getDestination());
@@ -73,72 +77,44 @@ public class Statistics {
         ss.close();
     }
 
-    public static Layer fieldStatistics(Layer layer, String[] categoryFields, List<String> summaryFields, List<NumberType> numberTypes, List<StatisticalMethod> statisticalMethods) {
+    public static Layer fieldStatistics(Layer layer, Field[] categoryFields, Field[] summaryFields, List<StatisticalMethod> statMethodList) {
         LayerMetadata metadata = layer.getMetadata();
-        String[] fieldNames = FieldUtil.initStatisticsFields(categoryFields, summaryFields, statisticalMethods);
+        Field[] fields = FieldUtil.initStatisticsFields(categoryFields, summaryFields, statMethodList);
         JavaPairRDD<String, Feature> result = layer
                 .mapToPair(pairItem -> {
                     Feature feature = pairItem._2();
                     StringBuilder keyBuilder = new StringBuilder("Statistics:");
-                    for (String categoryField : categoryFields) {
+                    for (Field categoryField : categoryFields) {
                         keyBuilder.append(feature.getAttribute(categoryField)).append(",");
                     }
                     keyBuilder.deleteCharAt(keyBuilder.length() - 1);
-                    LinkedHashMap<String, Object> attributes = AttributeUtil.initStatistics(feature.getAttributes(), categoryFields, summaryFields, numberTypes, statisticalMethods);
+                    LinkedHashMap<Field, Object> attributes = AttributeUtil.initStatistics(fields, categoryFields, summaryFields, statMethodList, feature.getAttributes());
                     feature.setAttributes(attributes);
                     feature.setGeometry(null);
                     return new Tuple2<>(keyBuilder.toString(), feature);
                 })
                 .reduceByKey((feature1, feature2) -> {
-                    LinkedHashMap<String, Object> attributes = AttributeUtil.statistic(feature1.getAttributes(), feature2.getAttributes(), summaryFields);
+                    LinkedHashMap<Field, Object> attributes = AttributeUtil.statistic(feature1.getAttributes(), feature2.getAttributes());
                     return new Feature(feature1.getFid(), attributes);
-                }).mapToPair(pairItem -> {
-                    Feature feature = pairItem._2();
-                    LinkedHashMap<String, Object> attributes = feature.getAttributes();
-                    LinkedHashMap<String, Object> newAttrs = new LinkedHashMap<>();
-                    Iterator<Map.Entry<String, Object>> it = attributes.entrySet().iterator();
-                    int i = 0;
-                    while (it.hasNext()) {
-                        Map.Entry<String, Object> entry = it.next();
-                        newAttrs.put(fieldNames[i++], entry.getValue());
-                    }
-                    feature.setAttributes(newAttrs);
-                    return new Tuple2<>(pairItem._1(), feature);
                 });
-        if (statisticalMethods.contains(StatisticalMethod.MEAN)) {
+        if (statMethodList.contains(StatisticalMethod.MEAN)) {
             result = result.mapToPair(pairItem -> {
                 Feature feature = pairItem._2();
-                LinkedHashMap<String, Object> attributes = feature.getAttributes();
-                for (String summaryField : summaryFields) {
-                    long count = ((Number) attributes.get(summaryField + StatisticalMethod.COUNT.getFieldNamePostfix())).longValue();
-                    double sum = ((Number) attributes.get(summaryField + StatisticalMethod.SUM.getFieldNamePostfix())).doubleValue();
-                    attributes.put(summaryField + StatisticalMethod.MEAN.getFieldNamePostfix(), sum / count);
+                LinkedHashMap<Field, Object> attributes = feature.getAttributes();
+                for (Field summaryField : summaryFields) {
+                    Field countField = summaryField.copy(), sumField = summaryField.copy();
+                    countField.setMark(FieldMark.STAT_COUNT);
+                    sumField.setMark(FieldMark.STAT_SUM);
+                    long count = ((Number) attributes.get(countField)).longValue();
+                    double sum = ((Number) attributes.get(sumField)).doubleValue();
+                    Field meanField = FieldUtil.getFieldByNameAndMark(fields, summaryField.getName(), FieldMark.STAT_MEAN);
+                    attributes.put(meanField, sum / count);
                 }
                 return pairItem;
             }).cache();
         } else {
             result = result.cache();
         }
-        return Layer.create(result, fieldNames, metadata.getCrs(), "None", result.count());
-    }
-
-    private static boolean checkArgs(String[] categoryFields, List<String> summaryFields, List<NumberType> numberTypes, String[] fields) {
-        boolean result = true;
-        if (summaryFields.size() <= 0) result = false;
-        if (summaryFields.size() != numberTypes.size()) result = false;
-        List<String> fieldList = Arrays.asList(fields);
-        for (String categoryField : categoryFields) {
-            if (!fieldList.contains(categoryField)) {
-                result = false;
-                break;
-            }
-        }
-        for (String summaryField : summaryFields) {
-            if (!fieldList.contains(summaryField)) {
-                result = false;
-                break;
-            }
-        }
-        return result;
+        return Layer.create(result, fields, metadata.getCrs(), "None", result.count());
     }
 }

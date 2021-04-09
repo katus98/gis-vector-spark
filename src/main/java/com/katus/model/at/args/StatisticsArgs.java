@@ -1,6 +1,5 @@
 package com.katus.model.at.args;
 
-import com.katus.constant.NumberType;
 import com.katus.constant.StatisticalMethod;
 import com.katus.model.base.args.UnaryArgs;
 import lombok.Getter;
@@ -8,7 +7,7 @@ import lombok.Setter;
 
 /**
  * @author SUN Katus
- * @version 2.0, 2021-04-06
+ * @version 2.1, 2021-04-09
  */
 @Getter
 @Setter
@@ -22,11 +21,6 @@ public class StatisticsArgs extends UnaryArgs {
      */
     private String summaryFields = "";
     /**
-     * 汇总数值字段数据类型, ","分隔
-     * @see NumberType
-     */
-    private String numberTypes = "";
-    /**
      * 汇总统计方法, ","分隔
      * @see StatisticalMethod
      */
@@ -38,7 +32,6 @@ public class StatisticsArgs extends UnaryArgs {
 
     @Override
     public Boolean isValid() {
-        return super.isValid() && !summaryFields.isEmpty() && NumberType.contains(numberTypes.split(","))
-                && StatisticalMethod.contains(statisticalMethods.split(","));
+        return super.isValid() && !summaryFields.isEmpty() && StatisticalMethod.contains(statisticalMethods.split(","));
     }
 }

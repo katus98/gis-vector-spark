@@ -3,6 +3,7 @@ package com.katus.model.dmt;
 import com.katus.constant.JoinType;
 import com.katus.constant.SpatialRelationship;
 import com.katus.entity.data.Feature;
+import com.katus.entity.data.Field;
 import com.katus.entity.data.Layer;
 import com.katus.entity.LayerMetadata;
 import com.katus.io.writer.LayerTextFileWriter;
@@ -62,19 +63,19 @@ public class SpatialJoin {
     public static Layer spatialJoin(Layer targetLayer, Layer joinLayer, JoinType joinType, SpatialRelationship relationship) {
         LayerMetadata metadata1 = targetLayer.getMetadata();
         LayerMetadata metadata2 = joinLayer.getMetadata();
-        String[] fieldNames = FieldUtil.merge(metadata1.getFieldNames(), metadata2.getFieldNames());
+        Field[] fields = FieldUtil.merge(metadata1.getFields(), metadata2.getFields());
         JavaPairRDD<String, Feature> tempResult = targetLayer.leftOuterJoin(joinLayer)
                 .mapToPair(leftPairItems -> {
                     Feature tarFeature = leftPairItems._2()._1();
                     String key = tarFeature.getFid() + "#-";
-                    LinkedHashMap<String, Object> attributes = AttributeUtil.merge(fieldNames, tarFeature.getAttributes(), new HashMap<>());
+                    LinkedHashMap<Field, Object> attributes = AttributeUtil.merge(fields, tarFeature.getAttributes(), new HashMap<>());
                     if (leftPairItems._2()._2().isPresent()) {
                         Feature joinFeature = leftPairItems._2()._2().get();
                         Method spatialMethod = Geometry.class.getMethod(relationship.getMethodName(), Geometry.class);
                         Boolean isSatisfied = (Boolean) spatialMethod.invoke(tarFeature.getGeometry(), joinFeature.getGeometry());
                         if (isSatisfied) {
                             key = tarFeature.getFid() + "#" + joinFeature.getFid() + "#+";
-                            attributes = AttributeUtil.merge(fieldNames, tarFeature.getAttributes(), joinFeature.getAttributes());
+                            attributes = AttributeUtil.merge(fields, tarFeature.getAttributes(), joinFeature.getAttributes());
                         }
                     }
                     return new Tuple2<>(key, new Feature(tarFeature.getFid(), attributes, tarFeature.getGeometry()));
@@ -106,6 +107,6 @@ public class SpatialJoin {
             featureCount = result.count();
         }
         tempResult.unpersist();
-        return Layer.create(result, fieldNames, metadata1.getCrs(), metadata1.getGeometryType(), featureCount);
+        return Layer.create(result, fields, metadata1.getCrs(), metadata1.getGeometryType(), featureCount);
     }
 }

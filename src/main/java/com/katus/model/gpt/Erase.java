@@ -102,6 +102,6 @@ public class Erase {
                 })
                 .filter(pairItem -> pairItem._2().hasGeometry())
                 .cache();
-        return Layer.create(result, metadata.getFieldNames(), metadata.getCrs(), metadata.getGeometryType(), result.count());
+        return Layer.create(result, metadata.getFields(), metadata.getCrs(), metadata.getGeometryType(), result.count());
     }
 }

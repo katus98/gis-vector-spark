@@ -61,6 +61,6 @@ public class MultiToSingle {
                 })
                 .cache();
         String geometryType = metadata.getGeometryType().replace("Multi", "");
-        return Layer.create(result, metadata.getFieldNames(), metadata.getCrs(), geometryType, result.count());
+        return Layer.create(result, metadata.getFields(), metadata.getCrs(), geometryType, result.count());
     }
 }

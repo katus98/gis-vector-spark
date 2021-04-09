@@ -1,6 +1,7 @@
 package com.katus.model.gpt;
 
 import com.katus.entity.data.Feature;
+import com.katus.entity.data.Field;
 import com.katus.entity.data.Layer;
 import com.katus.entity.LayerMetadata;
 import com.katus.io.writer.LayerTextFileWriter;
@@ -67,26 +68,26 @@ public class SymmetricalDifference {
     public static Layer symmetricalDifference(Layer layer1, Layer layer2) {
         LayerMetadata metadata1 = layer1.getMetadata();
         LayerMetadata metadata2 = layer2.getMetadata();
-        String[] fieldNames = FieldUtil.merge(metadata1.getFieldNames(), metadata2.getFieldNames());
+        Field[] fields = FieldUtil.merge(metadata1.getFields(), metadata2.getFields());
         JavaPairRDD<String, Feature> result = layer1.fullOuterJoin(layer2)
                 .flatMapToPair(fullPairItems -> {
                     List<Tuple2<String, Feature>> resultList = new ArrayList<>();
                     Feature tarFeature = fullPairItems._2()._1().isPresent() ? fullPairItems._2()._1().get() : null;
                     Feature extFeature = fullPairItems._2()._2().isPresent() ? fullPairItems._2()._2().get() : null;
-                    LinkedHashMap<String, Object> attributes1, attributes2;
+                    LinkedHashMap<Field, Object> attributes1, attributes2;
                     Feature feature1 = null, feature2 = null;
                     if (tarFeature != null && extFeature != null) {
-                        attributes1 = AttributeUtil.merge(fieldNames, tarFeature.getAttributes(), new HashMap<>());
-                        attributes2 = AttributeUtil.merge(fieldNames, new HashMap<>(), extFeature.getAttributes());
+                        attributes1 = AttributeUtil.merge(fields, tarFeature.getAttributes(), new HashMap<>());
+                        attributes2 = AttributeUtil.merge(fields, new HashMap<>(), extFeature.getAttributes());
                         feature1 = new Feature(tarFeature.getFid(), attributes1, tarFeature.getGeometry().difference(extFeature.getGeometry()));
                         feature2 = new Feature(extFeature.getFid(), attributes2, extFeature.getGeometry().difference(tarFeature.getGeometry()));
                     } else {
                         if (tarFeature != null) {
-                            attributes1 = AttributeUtil.merge(fieldNames, tarFeature.getAttributes(), new HashMap<>());
+                            attributes1 = AttributeUtil.merge(fields, tarFeature.getAttributes(), new HashMap<>());
                             feature1 = new Feature(tarFeature.getFid(), attributes1, tarFeature.getGeometry());
                         }
                         if (extFeature != null) {
-                            attributes2 = AttributeUtil.merge(fieldNames, new HashMap<>(), extFeature.getAttributes());
+                            attributes2 = AttributeUtil.merge(fields, new HashMap<>(), extFeature.getAttributes());
                             feature2 = new Feature(extFeature.getFid(), attributes2, extFeature.getGeometry());
                         }
                     }
@@ -104,6 +105,6 @@ public class SymmetricalDifference {
                 })
                 .filter(pairItem -> pairItem._2().hasGeometry())
                 .cache();
-        return Layer.create(result, fieldNames, metadata1.getCrs(), metadata1.getGeometryType(), result.count());
+        return Layer.create(result, fields, metadata1.getCrs(), metadata1.getGeometryType(), result.count());
     }
 }

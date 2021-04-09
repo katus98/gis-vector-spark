@@ -1,8 +1,9 @@
 package com.katus.model.at;
 
+import com.katus.constant.FieldType;
 import com.katus.constant.NumberRelationship;
-import com.katus.constant.NumberType;
 import com.katus.entity.data.Feature;
+import com.katus.entity.data.Field;
 import com.katus.entity.data.Layer;
 import com.katus.entity.LayerMetadata;
 import com.katus.io.writer.LayerTextFileWriter;
@@ -37,14 +38,24 @@ public class NumericalSelector {
         Layer inputLayer = InputUtil.makeLayer(ss, mArgs.getInput());
 
         log.info("Prepare calculation");
-        String selectField = mArgs.getSelectField();
+        Field selectField = inputLayer.getMetadata().getFieldByName(mArgs.getSelectField());
+        if (selectField.getType().equals(FieldType.TEXT)) {
+            String msg = "Field Numerical Selector does not support TEXT field, exit!";
+            log.error(msg);
+            throw new RuntimeException(msg);
+        }
         NumberRelationship relationship = NumberRelationship.getBySymbol(mArgs.getNumberRelationship());
-        NumberType numberType = NumberType.valueOf(mArgs.getNumberType().trim().toUpperCase());
-        Method valueOfMethod = Class.forName(numberType.getClassFullName()).getMethod("valueOf", String.class);
-        Number threshold = (Number) valueOfMethod.invoke(null, mArgs.getThreshold());
+        Number threshold;
+        if (!Number.class.isAssignableFrom(selectField.getType().getClazz())) {
+            log.warn("The selected field is a DATE/DATETIME field!");
+            threshold = Long.valueOf(mArgs.getThreshold());
+        } else {
+            Method valueOfMethod = selectField.getType().getClazz().getMethod("valueOf", String.class);
+            threshold = (Number) valueOfMethod.invoke(null, mArgs.getThreshold());
+        }
 
         log.info("Start Calculation");
-        Layer layer = fieldNumericalSelect(inputLayer, selectField, relationship, numberType, threshold);
+        Layer layer = fieldNumericalSelect(inputLayer, selectField, relationship, threshold);
 
         log.info("Output result");
         LayerTextFileWriter writer = new LayerTextFileWriter(mArgs.getOutput().getDestination());
@@ -53,25 +64,16 @@ public class NumericalSelector {
         ss.close();
     }
 
-    public static Layer fieldNumericalSelect(Layer layer, String selectField, NumberRelationship relationShip, NumberType numberType, Number threshold) {
+    public static Layer fieldNumericalSelect(Layer layer, Field selectField, NumberRelationship relationShip, Number threshold) {
         LayerMetadata metadata = layer.getMetadata();
         JavaPairRDD<String, Feature> result = layer.filter(pairItem -> {
-            Class<?> clazz = Class.forName(numberType.getClassFullName());
-            Object value = pairItem._2().getAttribute(selectField);
-            Number number;
-            if (value instanceof String) {
-                String valueStr = (String) value;
-                Method valueOfMethod = clazz.getMethod("valueOf", String.class);
-                number = (Number) valueOfMethod.invoke(null, valueStr);
-            } else if (value instanceof Number) {
-                number = (Number) value;
-            } else {
-                return false;
-            }
+            Number number = pairItem._2().getAttributeToNumber(selectField);
+            if (number == null) return false;
+            Class<?> clazz = selectField.getType().getClazz();
             Method compareToMethod = clazz.getMethod("compareTo", clazz);
             Integer compareResult = (Integer) compareToMethod.invoke(number, threshold);
             return relationShip.check(compareResult);
         }).cache();
-        return Layer.create(result, metadata.getFieldNames(), metadata.getCrs(), metadata.getGeometryType(), result.count());
+        return Layer.create(result, metadata.getFields(), metadata.getCrs(), metadata.getGeometryType(), result.count());
     }
 }

@@ -2,6 +2,7 @@ package com.katus.model.at;
 
 import com.katus.constant.JoinType;
 import com.katus.entity.data.Feature;
+import com.katus.entity.data.Field;
 import com.katus.entity.data.Layer;
 import com.katus.entity.LayerMetadata;
 import com.katus.io.writer.LayerTextFileWriter;
@@ -12,6 +13,7 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.sql.SparkSession;
 import scala.Tuple2;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
@@ -39,8 +41,9 @@ public class Join {
 
         log.info("Prepare calculation");
         JoinType joinType = JoinType.valueOf(mArgs.getJoinType().trim().toUpperCase());
-        String[] joinFields1 = mArgs.getJoinFields1().split(",");
-        String[] joinFields2 = mArgs.getJoinFields2().split(",");
+        LayerMetadata metadata1 = baseLayer.getMetadata(), metadata2 = joinLayer.getMetadata();
+        Field[] joinFields1 = Arrays.stream(mArgs.getJoinFields1().split(",")).map(metadata1::getFieldByName).toArray(Field[]::new);
+        Field[] joinFields2 = Arrays.stream(mArgs.getJoinFields2().split(",")).map(metadata2::getFieldByName).toArray(Field[]::new);
 
         log.info("Start Calculation");
         Layer layer = fieldJoin(baseLayer, joinLayer, joinType, joinFields1, joinFields2);
@@ -52,10 +55,10 @@ public class Join {
         ss.close();
     }
 
-    public static Layer fieldJoin(Layer baseLayer, Layer joinLayer, JoinType joinType, String[] joinFields1, String[] joinFields2) {
+    public static Layer fieldJoin(Layer baseLayer, Layer joinLayer, JoinType joinType, Field[] joinFields1, Field[] joinFields2) {
         LayerMetadata metadata1 = baseLayer.getMetadata();
         LayerMetadata metadata2 = joinLayer.getMetadata();
-        String[] fieldNames = FieldUtil.merge(metadata1.getFieldNames(), metadata2.getFieldNames());
+        Field[] fields = FieldUtil.merge(metadata1.getFields(), metadata2.getFields());
         int fieldNum = Math.min(joinFields1.length, joinFields2.length);
         JavaPairRDD<String, Feature> result1 = baseLayer.mapToPair(pairItem -> {
             Feature feature = pairItem._2();
@@ -78,12 +81,12 @@ public class Join {
         JavaPairRDD<String, Feature> result = result1.leftOuterJoin(result2)
                 .mapToPair(leftPairItems -> {
                     Feature tarFeature = leftPairItems._2()._1();
-                    LinkedHashMap<String, Object> attributes;
+                    LinkedHashMap<Field, Object> attributes;
                     if (leftPairItems._2()._2().isPresent()) {
                         Feature joinFeature = leftPairItems._2()._2().get();
-                        attributes = AttributeUtil.merge(fieldNames, tarFeature.getAttributes(), joinFeature.getAttributes());
+                        attributes = AttributeUtil.merge(fields, tarFeature.getAttributes(), joinFeature.getAttributes());
                     } else {
-                        attributes = AttributeUtil.merge(fieldNames, tarFeature.getAttributes(), new HashMap<>());
+                        attributes = AttributeUtil.merge(fields, tarFeature.getAttributes(), new HashMap<>());
                     }
                     tarFeature.setAttributes(attributes);
                     return new Tuple2<>(tarFeature.getFid(), tarFeature);
@@ -96,6 +99,6 @@ public class Join {
             result = result.cache();
             featureCount = result.count();
         }
-        return Layer.create(result, fieldNames, metadata1.getCrs(), metadata1.getGeometryType(), featureCount);
+        return Layer.create(result, fields, metadata1.getCrs(), metadata1.getGeometryType(), featureCount);
     }
 }

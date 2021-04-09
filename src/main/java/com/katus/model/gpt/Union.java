@@ -1,6 +1,7 @@
 package com.katus.model.gpt;
 
 import com.katus.entity.data.Feature;
+import com.katus.entity.data.Field;
 import com.katus.entity.data.Layer;
 import com.katus.entity.LayerMetadata;
 import com.katus.io.writer.LayerTextFileWriter;
@@ -76,7 +77,7 @@ public class Union {
         LayerMetadata metadata1 = indexedLayer1.getMetadata();
         LayerMetadata metadata2 = indexedLayer2.getMetadata();
         int dimension = GeometryUtil.getDimensionOfGeomType(metadata1.getGeometryType());
-        String[] fields = FieldUtil.merge(metadata1.getFieldNames(), metadata2.getFieldNames());
+        Field[] fields = FieldUtil.merge(metadata1.getFields(), metadata2.getFields());
         JavaPairRDD<String, Feature> result = indexedLayer1.fullOuterJoin(indexedLayer2)
                 .flatMapToPair(fullPairItems -> {
                     List<Tuple2<String, Feature>> resultList = new ArrayList<>();
@@ -86,16 +87,16 @@ public class Union {
                     if (fullPairItems._2()._2().isPresent()) feature2 = fullPairItems._2()._2().get();
                     if (feature1 != null && feature2 != null && feature1.getGeometry().intersects(feature2.getGeometry())) {
                         Geometry diff = GeometryUtil.breakByDimension(feature2.getGeometry().difference(feature1.getGeometry()), dimension);
-                        LinkedHashMap<String, Object> attributes = AttributeUtil.merge(fields, feature1.getAttributes(), feature2.getAttributes());
+                        LinkedHashMap<Field, Object> attributes = AttributeUtil.merge(fields, feature1.getAttributes(), feature2.getAttributes());
                         f1 = new Feature(feature1.getFid(), attributes, feature1.getGeometry());
                         if (!diff.isEmpty()) f2 = new Feature(feature2.getFid(), attributes, diff);
                     } else {
                         if (feature1 != null) {
-                            LinkedHashMap<String, Object> attributes1 = AttributeUtil.merge(fields, feature1.getAttributes(), new HashMap<>());
+                            LinkedHashMap<Field, Object> attributes1 = AttributeUtil.merge(fields, feature1.getAttributes(), new HashMap<>());
                             f1 = new Feature(feature1.getFid(), attributes1, feature1.getGeometry());
                         }
                         if (feature2 != null) {
-                            LinkedHashMap<String, Object> attributes2 = AttributeUtil.merge(fields, new HashMap<>(), feature2.getAttributes());
+                            LinkedHashMap<Field, Object> attributes2 = AttributeUtil.merge(fields, new HashMap<>(), feature2.getAttributes());
                             f2 = new Feature(feature2.getFid(), attributes2, feature2.getGeometry());
                         }
                     }

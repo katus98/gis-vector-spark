@@ -1,6 +1,7 @@
 package com.katus.model.gpt;
 
 import com.katus.entity.data.Feature;
+import com.katus.entity.data.Field;
 import com.katus.entity.data.Layer;
 import com.katus.entity.LayerMetadata;
 import com.katus.io.writer.LayerTextFileWriter;
@@ -13,6 +14,7 @@ import org.apache.spark.sql.SparkSession;
 import org.locationtech.jts.geom.Geometry;
 import scala.Tuple2;
 
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 
 /**
@@ -37,8 +39,11 @@ public class Dissolve {
         Layer inputLayer = InputUtil.makeLayer(ss, mArgs.getInput());
 
         log.info("Prepare calculation");
-        String[] dissolveFields = mArgs.getDissolveFields().split(",");
-        if (dissolveFields[0].isEmpty()) dissolveFields = new String[0];
+        Field[] dissolveFields = Arrays
+                .stream(mArgs.getDissolveFields().split(","))
+                .filter(str -> !str.isEmpty())
+                .map(inputLayer.getMetadata()::getFieldByName)
+                .toArray(Field[]::new);
 
         log.info("Start Calculation");
         Layer layer = dissolve(inputLayer, dissolveFields);
@@ -50,13 +55,13 @@ public class Dissolve {
         ss.close();
     }
 
-    public static Layer dissolve(Layer layer, String[] dissolveFields) {
+    public static Layer dissolve(Layer layer, Field[] dissolveFields) {
         LayerMetadata metadata = layer.getMetadata();
         JavaPairRDD<String, Feature> result = layer
                 .mapToPair(pairItem -> {
                     StringBuilder key = new StringBuilder("Dissolve:");
                     Feature feature = pairItem._2();
-                    for (String dissolveField : dissolveFields) {
+                    for (Field dissolveField : dissolveFields) {
                         key.append(feature.getAttribute(dissolveField)).append(",");
                     }
                     if (dissolveFields.length > 0) key.deleteCharAt(key.length() - 1);
@@ -69,8 +74,8 @@ public class Dissolve {
                 })
                 .mapToPair(pairItem -> {
                     Feature feature = pairItem._2();
-                    LinkedHashMap<String, Object> attributes = new LinkedHashMap<>();
-                    for (String dissolveField : dissolveFields) {
+                    LinkedHashMap<Field, Object> attributes = new LinkedHashMap<>();
+                    for (Field dissolveField : dissolveFields) {
                         attributes.put(dissolveField, feature.getAttribute(dissolveField));
                     }
                     feature.setAttributes(attributes);

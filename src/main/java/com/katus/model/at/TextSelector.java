@@ -2,6 +2,7 @@ package com.katus.model.at;
 
 import com.katus.constant.TextRelationship;
 import com.katus.entity.data.Feature;
+import com.katus.entity.data.Field;
 import com.katus.entity.data.Layer;
 import com.katus.entity.LayerMetadata;
 import com.katus.io.writer.LayerTextFileWriter;
@@ -31,15 +32,15 @@ public class TextSelector {
         }
 
         log.info("Make layers");
-        Layer targetLayer = InputUtil.makeLayer(ss, mArgs.getInput());
+        Layer inputLayer = InputUtil.makeLayer(ss, mArgs.getInput());
 
         log.info("Prepare calculation");
-        String selectField = mArgs.getSelectField();
+        Field selectField = inputLayer.getMetadata().getFieldByName(mArgs.getSelectField());
         TextRelationship relationShip = TextRelationship.valueOf(mArgs.getTextRelationship().trim().toUpperCase());
         String[] keywords = mArgs.getKeywords().split(",");
 
         log.info("Start Calculation");
-        Layer layer = fieldTextSelect(targetLayer, selectField, relationShip, keywords);
+        Layer layer = fieldTextSelect(inputLayer, selectField, relationShip, keywords);
 
         log.info("Output result");
         LayerTextFileWriter writer = new LayerTextFileWriter(mArgs.getOutput().getDestination());
@@ -48,8 +49,7 @@ public class TextSelector {
         ss.close();
     }
 
-    public static Layer fieldTextSelect(Layer layer, String selectField, TextRelationship relationShip, String[] keywords) {
-        if (keywords.length == 0 || (keywords.length == 1 && keywords[0].isEmpty())) return layer;
+    public static Layer fieldTextSelect(Layer layer, Field selectField, TextRelationship relationShip, String[] keywords) {
         LayerMetadata metadata = layer.getMetadata();
         JavaPairRDD<String, Feature> result = null;
         switch (relationShip) {
@@ -90,6 +90,6 @@ public class TextSelector {
                 }).cache();
                 break;
         }
-        return Layer.create(result, metadata.getFieldNames(), metadata.getCrs(), metadata.getGeometryType(), result.count());
+        return Layer.create(result, metadata.getFields(), metadata.getCrs(), metadata.getGeometryType(), result.count());
     }
 }

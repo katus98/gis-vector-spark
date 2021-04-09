@@ -64,6 +64,6 @@ public class Buffer {
             pairItem._2().setGeometry(pairItem._2().getGeometry().buffer(distance));
             return pairItem;
         }).cache();
-        return Layer.create(result, metadata.getFieldNames(), metadata.getCrs(), "Polygon", metadata.getFeatureCount());
+        return Layer.create(result, metadata.getFields(), metadata.getCrs(), "Polygon", metadata.getFeatureCount());
     }
 }

@@ -1,6 +1,7 @@
 package com.katus.model.gpt;
 
 import com.katus.entity.data.Feature;
+import com.katus.entity.data.Field;
 import com.katus.entity.data.Layer;
 import com.katus.entity.LayerMetadata;
 import com.katus.io.writer.LayerTextFileWriter;
@@ -59,7 +60,7 @@ public class Intersection {
         int dimension1 = GeometryUtil.getDimensionOfGeomType(metadata1.getGeometryType());
         int dimension2 = GeometryUtil.getDimensionOfGeomType(metadata2.getGeometryType());
         int dimension = Math.min(dimension1, dimension2);
-        String[] fieldNames = FieldUtil.merge(metadata1.getFieldNames(), metadata2.getFieldNames());
+        Field[] fields = FieldUtil.merge(metadata1.getFields(), metadata2.getFields());
         JavaPairRDD<String, Feature> result = layer1.join(layer2)
                 .mapToPair(pairItems -> {
                     Feature targetFeature = pairItems._2()._1();
@@ -70,7 +71,7 @@ public class Intersection {
                     String key = "";
                     if (geoTarget.intersects(geoExtent)) {
                         key = targetFeature.getFid() + "#" + extentFeature.getFid();
-                        LinkedHashMap<String, Object> attributes = AttributeUtil.merge(fieldNames, targetFeature.getAttributes(), extentFeature.getAttributes());
+                        LinkedHashMap<Field, Object> attributes = AttributeUtil.merge(fields, targetFeature.getAttributes(), extentFeature.getAttributes());
                         Geometry inter = geoExtent.intersection(geoTarget);
                         inter = GeometryUtil.breakByDimension(inter, dimension);
                         feature = new Feature(targetFeature.getFid(), attributes, inter);
@@ -82,6 +83,6 @@ public class Intersection {
                 .filter(pairItem -> pairItem._2().hasGeometry())
                 .reduceByKey((f1, f2) -> f1)
                 .cache();
-        return Layer.create(result, fieldNames, metadata1.getCrs(), metadata1.getGeometryType(), result.count());
+        return Layer.create(result, fields, metadata1.getCrs(), metadata1.getGeometryType(), result.count());
     }
 }

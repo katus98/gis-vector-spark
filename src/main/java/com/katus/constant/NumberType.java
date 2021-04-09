@@ -4,8 +4,9 @@ import java.io.Serializable;
 
 /**
  * @author SUN Katus
- * @version 1.1, 2021-04-06
+ * @version 1.2, 2021-04-09
  */
+@Deprecated
 public enum NumberType implements Serializable {
     SHORT,
     INTEGER,
