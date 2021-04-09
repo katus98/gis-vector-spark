@@ -1,33 +1,36 @@
 package com.katus.util;
 
-import com.katus.constant.NumberType;
+import com.katus.constant.FieldMark;
+import com.katus.constant.FieldType;
 import com.katus.constant.StatisticalMethod;
+import com.katus.entity.data.Field;
 
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
- * @author Sun Katus
- * @version 1.0, 2020-11-19
+ * @author SUN Katus
+ * @version 1.2, 2021-04-09
  */
 public class AttributeUtil {
-    public static LinkedHashMap<String, Object> merge(String[] fieldNames, Map<String, Object> attr1, Map<String, Object> attr2) {
-        LinkedHashMap<String, Object> attributes = new LinkedHashMap<>();
-        for (String fieldName : fieldNames) {
-            if (attr1.containsKey(fieldName)) {
-                attributes.put(fieldName, attr1.get(fieldName));
-            } else if (attr2.containsKey(fieldName)) {
-                attributes.put(fieldName, attr2.get(fieldName));
-            } else {
-                String oriField = fieldName.substring(0, fieldName.length() - 2);
-                if (fieldName.endsWith("_1")) {
-                    attributes.put(fieldName, attr1.getOrDefault(oriField, ""));
-                } else if (fieldName.endsWith("_2")){
-                    attributes.put(fieldName, attr2.getOrDefault(oriField, ""));
+    /**
+     * 属性字段值合并
+     * @param fields 合并后的属性字段
+     * @param attributesArray 属性字段值列表数组
+     * @return 合并后的属性字段值列表
+     */
+    @SafeVarargs
+    public static LinkedHashMap<Field, Object> merge(Field[] fields, Map<Field, Object>... attributesArray) {
+        LinkedHashMap<Field, Object> attributes = new LinkedHashMap<>();
+        List<Field> fieldList = Arrays.asList(fields);
+        for (int i = 0; i < attributesArray.length; i++) {
+            for (Map.Entry<Field, Object> entry : attributesArray[i].entrySet()) {
+                Field field = entry.getKey();
+                if (fieldList.contains(field)) {
+                    attributes.put(fields[fieldList.indexOf(field)], entry.getValue());
                 } else {
-                    attributes.put(fieldName, "");
+                    Field copyField = field.copy();
+                    copyField.setName(field.getName() + "_" + i);
+                    attributes.put(fields[fieldList.indexOf(copyField)], entry.getValue());
                 }
             }
         }
@@ -35,66 +38,68 @@ public class AttributeUtil {
     }
 
     @Deprecated
-    public static LinkedHashMap<String, Object> mergeAttributes(String[] fieldNames, Map<String, Object> attr1, Map<String, Object> attr2) {
-        LinkedHashMap<String, Object> attributes = new LinkedHashMap<>();
-        for (String fieldName : fieldNames) {
-            if (fieldName.startsWith("target_")) {
-                attributes.put(fieldName, attr1.getOrDefault(fieldName.substring(fieldName.indexOf("_") + 1), ""));
+    public static LinkedHashMap<Field, Object> mergeAttributes(Field[] fields, Map<Field, Object> attr1, Map<Field, Object> attr2) {
+        LinkedHashMap<Field, Object> attributes = new LinkedHashMap<>();
+        for (Field fieldName : fields) {
+            Field oriField = fieldName.copy();
+            oriField.setName(fieldName.getName().substring(fieldName.getName().indexOf("_") + 1));
+            if (fieldName.getName().startsWith("target_")) {
+                attributes.put(fieldName, attr1.getOrDefault(oriField, fieldName.getDefaultValue()));
             } else {
-                attributes.put(fieldName, attr2.getOrDefault(fieldName.substring(fieldName.indexOf("_") + 1), ""));
+                attributes.put(fieldName, attr2.getOrDefault(oriField, fieldName.getDefaultValue()));
             }
         }
         return attributes;
     }
 
-    public static LinkedHashMap<String, Object> initStatistics(LinkedHashMap<String, Object> oriAttr, String[] categoryFields, List<String> summaryFields, List<NumberType> numberTypes, List<StatisticalMethod> statisticalMethods) {
-        LinkedHashMap<String, Object> attributes = new LinkedHashMap<>();
-        if (!categoryFields[0].trim().isEmpty()) {
-            for (String categoryField : categoryFields) {
-                attributes.put(categoryField, oriAttr.get(categoryField));
-            }
+    public static LinkedHashMap<Field, Object> initStatistics(Field[] fields, Field[] categoryFields, Field[] summaryFields,
+                                                              List<StatisticalMethod> statisticalMethods,
+                                                              LinkedHashMap<Field, Object> oriAttr) {
+        LinkedHashMap<Field, Object> attributes = new LinkedHashMap<>();
+        int i = 0;
+        for (Field categoryField : categoryFields) {
+            attributes.put(fields[i++], oriAttr.get(categoryField));
         }
-        for (int i = 0; i < summaryFields.size(); i++) {
+        for (Field summaryField : summaryFields) {
             for (StatisticalMethod statisticalMethod : statisticalMethods) {
-                String key = summaryFields.get(i) + statisticalMethod.getFieldNamePostfix();
                 switch (statisticalMethod) {
                     case COUNT:
-                        attributes.put(key + "(LONG)", 5L);
+                        attributes.put(fields[i++], 1L);
                         break;
                     case MEAN:
-                        attributes.put(key + "(DOUBLE)", 1.0);
+                        attributes.put(fields[i++], 1.0);
                         break;
-                    default:
-                        if (numberTypes.get(i).getIsDecimal()) {
-                            attributes.put(key + "(DOUBLE)", Double.parseDouble(oriAttr.get(summaryFields.get(i)).toString()));
-                        } else {
-                            attributes.put(key + "(LONG)", Long.parseLong(oriAttr.get(summaryFields.get(i)).toString()));
+                    case SUM:
+                        if (summaryField.getType().equals(FieldType.INTEGER)) {
+                            attributes.put(fields[i++], Long.valueOf(oriAttr.get(summaryField).toString()));
+                            break;
                         }
-                        break;
+                    default:
+                        attributes.put(fields[i++], oriAttr.get(summaryField));
                 }
             }
         }
         return attributes;
     }
 
-    public static LinkedHashMap<String, Object> statistic(LinkedHashMap<String, Object> attr1, LinkedHashMap<String, Object> attr2, List<String> summaryFields) {
-        LinkedHashMap<String, Object> attributes = new LinkedHashMap<>();
-        Iterator<Map.Entry<String, Object>> it1 = attr1.entrySet().iterator();
-        Iterator<Map.Entry<String, Object>> it2 = attr2.entrySet().iterator();
+    public static LinkedHashMap<Field, Object> statistic(LinkedHashMap<Field, Object> attr1, LinkedHashMap<Field, Object> attr2) {
+        LinkedHashMap<Field, Object> attributes = new LinkedHashMap<>();
+        Iterator<Map.Entry<Field, Object>> it1 = attr1.entrySet().iterator();
+        Iterator<Map.Entry<Field, Object>> it2 = attr2.entrySet().iterator();
         while (it1.hasNext() && it2.hasNext()) {
-            Map.Entry<String, Object> entry1 = it1.next();
-            Map.Entry<String, Object> entry2 = it2.next();
-            if (!entry1.getKey().contains("_")) {
-                attributes.put(entry1.getKey(), entry1.getValue());
-                continue;
-            }
-            if (summaryFields.contains(entry1.getKey().substring(0, entry1.getKey().lastIndexOf("_")))) {
-                NumberType numberType = NumberType.getByFieldName(entry1.getKey());
-                StatisticalMethod statisticalMethod = StatisticalMethod.getByFieldName(entry1.getKey());
+            Map.Entry<Field, Object> entry1 = it1.next();
+            Map.Entry<Field, Object> entry2 = it2.next();
+            Field field = entry1.getKey();
+            if (!field.equals(entry2.getKey())) continue;
+            FieldMark fieldMark = field.getMark();
+            if (fieldMark.equals(FieldMark.ORIGIN)) {
+                attributes.put(field, entry1.getValue());
+            } else if (fieldMark.name().startsWith("STAT_")) {
+                StatisticalMethod statisticalMethod = StatisticalMethod.getByFieldMark(fieldMark);
                 Number result;
-                switch (statisticalMethod) {
+                switch (Objects.requireNonNull(statisticalMethod)) {
                     case SUM:
-                        result = numberType.equals(NumberType.LONG) ?
+                        result = field.getType().equals(FieldType.INTEGER64) ?
                                 ((Number) entry1.getValue()).longValue() + ((Number) entry2.getValue()).longValue() :
                                 ((Number) entry1.getValue()).doubleValue() + ((Number) entry2.getValue()).doubleValue();
                         break;
@@ -107,12 +112,11 @@ public class AttributeUtil {
                     case MINIMUM:
                         result = min((Number) entry1.getValue(), (Number) entry2.getValue());
                         break;
-                    case MEAN:
                     default:
                         result = (Number) entry1.getValue();
                         break;
                 }
-                attributes.put(entry1.getKey(), result);
+                attributes.put(field, result);
             }
         }
         return attributes;

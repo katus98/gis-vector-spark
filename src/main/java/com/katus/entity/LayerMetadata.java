@@ -1,7 +1,9 @@
 package com.katus.entity;
 
+import com.katus.entity.data.Field;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import java.io.Serializable;
@@ -13,21 +15,33 @@ import java.util.Arrays;
  */
 @Getter
 @Setter
+@Slf4j
 public class LayerMetadata implements Serializable {
-    String[] fieldNames;
+    // todo
+    private String[] fieldNames;
+    private Field[] fields;
     private CoordinateReferenceSystem crs;
-    String geometryType;
-    Long featureCount;
+    private String geometryType;
+    private Long featureCount;
 
-    public LayerMetadata(String[] fieldNames, CoordinateReferenceSystem crs, String geometryType) {
-        this(fieldNames, crs, geometryType, -1L);
+    public LayerMetadata(Field[] fields, CoordinateReferenceSystem crs, String geometryType) {
+        this(fields, crs, geometryType, -1L);
     }
 
-    public LayerMetadata(String[] fieldNames, CoordinateReferenceSystem crs, String geometryType, Long featureCount) {
-        this.fieldNames = fieldNames;
+    public LayerMetadata(Field[] fields, CoordinateReferenceSystem crs, String geometryType, Long featureCount) {
+        this.fields = fields;
         this.crs = crs;
         this.geometryType = geometryType;
         this.featureCount = featureCount;
+    }
+
+    public Field getFieldByName(String name) {
+        for (Field field : fields) {
+            if (field.getName().equals(name)) return field;
+        }
+        String msg = "Field " + name + " does not exist!";
+        log.error(msg);
+        throw new RuntimeException(msg);
     }
 
     @Override

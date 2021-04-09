@@ -95,23 +95,22 @@ public class Layer extends JavaPairRDD<String, Feature> implements Serializable 
     /**
      * create a layer
      * @param javaPairRDD layer content
-     * @param fieldNames fields of layer
+     * @param fields fields of layer
      * @param crs layer's Coordinate Reference System
      * @param geometryType the geometry type of layer (ensure one dimension is ok)
      * @param featureCount the total count of the feature
      * @return new layer
      */
-    public static Layer create(JavaPairRDD<String, Feature> javaPairRDD,
-                                                   String[] fieldNames, CoordinateReferenceSystem crs, String geometryType,
-                                                   Long featureCount) {
+    public static Layer create(JavaPairRDD<String, Feature> javaPairRDD, Field[] fields,
+                               CoordinateReferenceSystem crs, String geometryType, Long featureCount) {
         Layer layer = new Layer(javaPairRDD);
-        layer.setMetadata(new LayerMetadata(fieldNames, crs, geometryType, featureCount));
+        layer.setMetadata(new LayerMetadata(fields, crs, geometryType, featureCount));
         return layer;
     }
 
-    public static Layer create(JavaPairRDD<String, Feature> javaPairRDD,
-                                            String[] fieldNames, CoordinateReferenceSystem crs, String geometryType) {
-        return create(javaPairRDD, fieldNames, crs, geometryType, -1L);
+    public static Layer create(JavaPairRDD<String, Feature> javaPairRDD, Field[] fields,
+                               CoordinateReferenceSystem crs, String geometryType) {
+        return create(javaPairRDD, fields, crs, geometryType, -1L);
     }
 
     /**

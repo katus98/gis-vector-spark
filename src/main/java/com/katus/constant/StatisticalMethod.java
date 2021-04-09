@@ -1,20 +1,32 @@
 package com.katus.constant;
 
+import lombok.Getter;
+
 import java.io.Serializable;
 
 /**
  * @author SUN Katus
- * @version 1.1, 2021-04-06
+ * @version 1.2, 2021-04-08
  */
+@Getter
 public enum StatisticalMethod implements Serializable {
-    COUNT,
-    MAXIMUM,
-    MINIMUM,
-    SUM,
-    MEAN;
+    COUNT(FieldMark.STAT_COUNT),
+    MAXIMUM(FieldMark.STAT_MAXIMUM),
+    MINIMUM(FieldMark.STAT_MINIMUM),
+    SUM(FieldMark.STAT_SUM),
+    MEAN(FieldMark.STAT_MEAN);
 
-    public String getFieldNamePostfix() {
-        return "_#" + this.name() + "#";
+    private final FieldMark fieldMark;
+
+    StatisticalMethod(FieldMark fieldMark) {
+        this.fieldMark = fieldMark;
+    }
+
+    public static StatisticalMethod getByFieldMark(FieldMark fieldMark) {
+        String name = fieldMark.name();
+        if (name.startsWith("STAT_")) {
+            return StatisticalMethod.valueOf(name.substring(5));
+        } else return null;
     }
 
     public static StatisticalMethod getByFieldName(String fieldName) {

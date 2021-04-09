@@ -1,67 +1,106 @@
 package com.katus.util;
 
+import com.katus.constant.FieldMark;
+import com.katus.constant.FieldType;
 import com.katus.constant.StatisticalMethod;
+import com.katus.entity.data.Field;
+import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
- * @author Sun Katus
- * @version 1.1, 2020-12-12
+ * @author SUN Katus
+ * @version 1.3, 2021-04-09
  */
+@Slf4j
 public final class FieldUtil {
-    public static String[] merge(String[] fieldNames1, String[] fieldNames2) {
-        List<String> fields1 = Arrays.asList(fieldNames1);
-        List<String> fields2 = Arrays.asList(fieldNames2);
-        String[] fieldNames = new String[fieldNames1.length + fieldNames2.length];
-        int i = 0;
-        for (String field : fields1) {
-            fieldNames[i++] = fields2.contains(field) ? field + "_1" : field;
+    /**
+     * 属性字段合并, 相同字段使用 "_index" 区分
+     * @param fieldArrays 多个属性字段数组
+     * @return 合并后的属性字段数组
+     */
+    public static Field[] merge(Field[]... fieldArrays) {
+        if (fieldArrays.length == 0) return new Field[0];
+        List<Field> fieldList = Arrays.asList(fieldArrays[0]);
+        Set<Integer> indexSet = new HashSet<>();
+        for (int i = 1; i < fieldArrays.length; i++) {
+            for (Field field : fieldArrays[i]) {
+                Field newField = field.copy();
+                if (fieldList.contains(field)) {
+                    indexSet.add(fieldList.indexOf(field));
+                    newField.setName(field.getName() + "_" + i);
+                }
+                fieldList.add(newField);
+            }
         }
-        for (String field : fields2) {
-            fieldNames[i++] = fields1.contains(field) ? field + "_2" : field;
+        for (Integer index : indexSet) {
+            Field firstSameField = fieldList.get(index);
+            firstSameField.setName(firstSameField.getName() + "_0");
         }
-        return fieldNames;
+        Field[] fields = new Field[fieldList.size()];
+        fieldList.toArray(fields);
+        return fields;
     }
 
-    public static String[] mergeToLeast(String[] fieldNames1, String[] fieldNames2) {
-        ArrayList<String> fields = new ArrayList<>(Arrays.asList(fieldNames1));
-        for (String field : fieldNames2) {
-            if (!fields.contains(field)) fields.add(field);
+    public static Field[] mergeToLeast(Field[]... fieldArrays) {
+        if (fieldArrays.length == 0) return new Field[0];
+        List<Field> fieldList = Arrays.stream(fieldArrays[0]).map(Field::copy).collect(Collectors.toList());
+        for (int i = 1; i < fieldArrays.length; i++) {
+            for (Field field : fieldArrays[i]) {
+                if (!fieldList.contains(field)) fieldList.add(field.copy());
+            }
         }
-        String[] fieldNames = new String[fields.size()];
-        fields.toArray(fieldNames);
-        return fieldNames;
+        Field[] fields = new Field[fieldList.size()];
+        fieldList.toArray(fields);
+        return fields;
     }
 
     @Deprecated
-    public static String[] mergeFields(String[] fieldNames1, String[] fieldNames2) {
-        String[] fieldNames = new String[fieldNames1.length + fieldNames2.length];
+    public static Field[] mergeFields(Field[] fieldNames1, Field[] fieldNames2) {
+        Field[] fieldNames = new Field[fieldNames1.length + fieldNames2.length];
         int i = 0;
-        for (String field : fieldNames1) {
-            fieldNames[i++] = "target_" + field;
+        for (Field field : fieldNames1) {
+            Field newField = field.copy();
+            newField.setName("target_" + field.getName());
+            fieldNames[i++] = newField;
         }
-        for (String field : fieldNames2) {
-            fieldNames[i++] = "extent_" + field;
+        for (Field field : fieldNames2) {
+            Field newField = field.copy();
+            newField.setName("extent_" + field.getName());
+            fieldNames[i++] = newField;
         }
         return fieldNames;
     }
 
-    public static String[] initStatisticsFields(String[] categoryFields, List<String> summaryFields, List<StatisticalMethod> statisticalMethods) {
-        String[] fields;
+    public static Field[] initStatisticsFields(Field[] categoryFields, Field[] summaryFields, List<StatisticalMethod> statMethodList) {
+        Field[] fields = new Field[categoryFields.length + summaryFields.length * statMethodList.size()];
         int i = 0;
-        if (categoryFields[0].trim().isEmpty()) {
-            fields = new String[summaryFields.size() * statisticalMethods.size()];
-        } else {
-            fields = new String[categoryFields.length + summaryFields.size() * statisticalMethods.size()];
-            for (String categoryField : categoryFields) {
-                fields[i++] = categoryField;
-            }
+        for (Field categoryField : categoryFields) {
+            fields[i++] = categoryField;
         }
-        for (String summaryField : summaryFields) {
-            for (StatisticalMethod statisticalMethod : statisticalMethods) {
-                fields[i++] = summaryField + statisticalMethod.getFieldNamePostfix();
+        for (Field summaryField : summaryFields) {
+            for (StatisticalMethod statMethod : statMethodList) {
+                Field statField = summaryField.copy();
+                statField.setMark(statMethod.getFieldMark());
+                switch (statMethod) {
+                    case COUNT:
+                        statField.setType(FieldType.INTEGER64);
+                        break;
+                    case MEAN:
+                        statField.setType(FieldType.DECIMAL);
+                        break;
+                    case SUM:
+                        if (summaryField.getType().equals(FieldType.INTEGER)) {
+                            statField.setType(FieldType.INTEGER64);
+                        }
+                    default:
+                        break;
+                }
+                fields[i++] = statField;
             }
         }
         return fields;
@@ -86,5 +125,23 @@ public final class FieldUtil {
             }
         }
         return fields;
+    }
+
+    public static Field getFieldByName(Field[] fields, String name) {
+        for (Field field : fields) {
+            if (field.getName().equals(name)) return field;
+        }
+        String msg = "Field " + name + " does not exist!";
+        log.error(msg);
+        throw new RuntimeException(msg);
+    }
+
+    public static Field getFieldByNameAndMark(Field[] fields, String name, FieldMark mark) {
+        for (Field field : fields) {
+            if (field.getName().equals(name) && field.getMark().equals(mark)) return field;
+        }
+        String msg = "Field " + name + " with " + mark.name() + " does not exist!";
+        log.error(msg);
+        throw new RuntimeException(msg);
     }
 }
