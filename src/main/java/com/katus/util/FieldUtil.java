@@ -46,6 +46,11 @@ public final class FieldUtil {
         return fields;
     }
 
+    /**
+     * 属性字段合并, 相同字段不做区分
+     * @param fieldArrays 多个属性字段数组
+     * @return 合并后的属性字段数组
+     */
     public static Field[] mergeToLeast(Field[]... fieldArrays) {
         if (fieldArrays.length == 0) return new Field[0];
         List<Field> fieldList = Arrays.stream(fieldArrays[0]).map(Field::copy).collect(Collectors.toList());
@@ -76,6 +81,13 @@ public final class FieldUtil {
         return fieldNames;
     }
 
+    /**
+     * 初始化统计结果字段
+     * @param categoryFields 分类字段数组
+     * @param summaryFields 汇总字段数组
+     * @param statMethodList 统计方法列表
+     * @return 统计结果含有的字段
+     */
     public static Field[] initStatisticsFields(Field[] categoryFields, Field[] summaryFields, List<StatisticalMethod> statMethodList) {
         Field[] fields = new Field[categoryFields.length + summaryFields.length * statMethodList.size()];
         int i = 0;
@@ -106,6 +118,7 @@ public final class FieldUtil {
         return fields;
     }
 
+    @Deprecated
     public static int indexOfGeomField(String fieldName, String[] geometryFields) {
         int index = -1;
         for (int i = 0; i < geometryFields.length; i++) {
@@ -117,6 +130,7 @@ public final class FieldUtil {
         return index;
     }
 
+    @Deprecated
     public static String[] excludeGeomFields(String[] allFields, String[] geomFields) {
         String[] fields = new String[allFields.length - geomFields.length];
         for (int i = 0, j = 0; i < allFields.length; i++) {
@@ -127,6 +141,12 @@ public final class FieldUtil {
         return fields;
     }
 
+    /**
+     * 通过名字获取字段
+     * @param fields 字段数组
+     * @param name 名字
+     * @return 第一个符合条件的字段
+     */
     public static Field getFieldByName(Field[] fields, String name) {
         for (Field field : fields) {
             if (field.getName().equals(name)) return field;
@@ -136,6 +156,13 @@ public final class FieldUtil {
         throw new RuntimeException(msg);
     }
 
+    /**
+     * 通过名字和标识获取字段
+     * @param fields 字段数组
+     * @param name 名字
+     * @param mark 标识
+     * @return 第一个符合条件的字段
+     */
     public static Field getFieldByNameAndMark(Field[] fields, String name, FieldMark mark) {
         for (Field field : fields) {
             if (field.getName().equals(name) && field.getMark().equals(mark)) return field;

@@ -1,8 +1,11 @@
 package com.katus.util;
 
 import com.katus.constant.GeomConstant;
+import com.katus.constant.GeometryFieldFormat;
+import com.katus.constant.GeometryType;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
+import org.locationtech.jts.io.WKBReader;
 import org.locationtech.jts.io.WKTReader;
 
 import java.util.ArrayList;
@@ -10,9 +13,10 @@ import java.util.List;
 
 /**
  * @author Sun Katus
- * @version 1.1, 2020-12-09
+ * @version 1.2, 2021-04-13
  */
 public final class GeometryUtil {
+
     public static int getDimensionOfGeomType(String geometryType) {
         int dimension = -1;
         geometryType = geometryType.toLowerCase();
@@ -83,6 +87,41 @@ public final class GeometryUtil {
         return geometry;
     }
 
+    public static Geometry getGeometryFromText(String[] text, GeometryFieldFormat format, GeometryType type) throws ParseException {
+        Geometry geometry = GeomConstant.EMPTY_GEOMETRY;
+        if (text.length == 0) {
+            return geometry;
+        }
+        WKTReader wktReader = new WKTReader();
+        switch (format) {
+            case WKB:
+                WKBReader wkbReader = new WKBReader();
+                geometry = wkbReader.read(HexUtil.hexStringToBytes(text[0]));
+                break;
+            case WKT:
+                geometry = wktReader.read(text[0]);
+                break;
+            case COORDINATES:
+                switch (text.length) {
+                    case 1:   // Coordinate of points in one field. Need geometry type.
+                        if (type.equals(GeometryType.POLYGON)) {
+                            geometry = wktReader.read(String.format("POLYGON ((%s))", text[0]));
+                        } else {
+                            geometry = wktReader.read(String.format("%s (%s)", type.name(), text[0]));
+                        }
+                        break;
+                    case 2:   // Point: lat, lon
+                        geometry = wktReader.read(String.format("POINT (%s %s)", text[0], text[1]));
+                        break;
+                    case 4:   // OD: sLat, sLon, eLat, eLon
+                        geometry = wktReader.read(String.format("LINESTRING (%s %s,%s %s)", text[0], text[1], text[2], text[3]));
+                        break;
+                }
+        }
+        return geometry;
+    }
+
+    @Deprecated
     public static Geometry getGeometryFromText(String[] text, Boolean isWkt, String geometryType) throws ParseException {
         WKTReader wktReader = new WKTReader();
         Geometry geometry;
