@@ -22,12 +22,13 @@ import java.util.UUID;
  * @version 1.2, 2021-04-08
  */
 @Getter
-@Setter
 public class Feature implements Serializable {
     public static final Feature EMPTY_FEATURE;
 
-    private String fid;
-    private LinkedHashMap<Field, Object> attributes;
+    @Setter
+    protected String fid;
+    protected LinkedHashMap<Field, Object> attributes;
+    @Setter
     private Geometry geometry;
 
     static {
@@ -38,8 +39,8 @@ public class Feature implements Serializable {
         this(UUID.randomUUID().toString(), new LinkedHashMap<>());
     }
 
-    public Feature(String fid, LinkedHashMap<Field, Object> attributes) {
-        this(fid, attributes, null);
+    public Feature(String fid) {
+        this(fid, new LinkedHashMap<>());
     }
 
     public Feature(Geometry geometry) {
@@ -50,15 +51,15 @@ public class Feature implements Serializable {
         this(feature.getFid(), feature.getAttributes(), feature.getGeometry());
     }
 
+    public Feature(String fid, LinkedHashMap<Field, Object> attributes) {
+        this(fid, attributes, null);
+    }
+
     public Feature(String fid, LinkedHashMap<Field, Object> attributes, Geometry geometry) {
         this.fid = fid;
         this.attributes = new LinkedHashMap<>();
         this.attributes.putAll(attributes);
         this.geometry = geometry;
-    }
-
-    public boolean hasGeometry() {
-        return geometry != null && !geometry.isEmpty();
     }
 
     public Object getAttribute(Field key) {
@@ -87,16 +88,33 @@ public class Feature implements Serializable {
         return result;
     }
 
-    public void removeAttribute(Field key) {
-        attributes.remove(key);
-    }
-
-    public void setAttribute(Field key, Object value) {
+    public void addAttribute(Field key, Object value) {
         this.attributes.put(key, value);
     }
 
     public void addAttributes(LinkedHashMap<Field, Object> attributes) {
         this.attributes.putAll(attributes);
+    }
+
+    public void setAttribute(Field key, Object value) {
+        this.addAttribute(key, value);
+    }
+
+    public void setAttributes(LinkedHashMap<Field, Object> attributes) {
+        this.clearAttributes();
+        this.addAttributes(attributes);
+    }
+
+    public void removeAttribute(Field key) {
+        this.attributes.remove(key);
+    }
+
+    public void clearAttributes() {
+        this.attributes = new LinkedHashMap<>();
+    }
+
+    public boolean hasGeometry() {
+        return geometry != null && !geometry.isEmpty();
     }
 
     public void transform(CoordinateReferenceSystem oriCrs, CoordinateReferenceSystem tarCrs) throws FactoryException, TransformException {

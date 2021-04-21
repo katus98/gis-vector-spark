@@ -5,8 +5,10 @@ import com.katus.constant.FieldType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.spark.sql.types.DataType;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * @author SUN Katus
@@ -29,6 +31,34 @@ public class Field implements Serializable {
         this.type = FieldType.TEXT;
         this.description = "";
         this.mark = FieldMark.ORIGIN;
+    }
+
+    public Field(String name, Class<?> clazz) {
+        this.name = name;
+        this.alias = name;
+        this.description = "";
+        this.mark = FieldMark.ORIGIN;
+        if (clazz.equals(Integer.class) || clazz.equals(Short.class)) {
+            this.type = FieldType.INTEGER;
+        } else if (clazz.equals(Long.class)) {
+            this.type = FieldType.INTEGER64;
+        } else if (clazz.equals(Double.class) || clazz.equals(Float.class)) {
+            this.type = FieldType.DECIMAL;
+        } else if (clazz.equals(Date.class)) {
+            this.type = FieldType.DATE;
+        } else {
+            this.type = FieldType.TEXT;
+        }
+    }
+
+    public Field(String name, DataType dataType) {
+        this(name);
+        // todo: find the banding between SparkSQL datatype and Java datatype.
+    }
+
+    public Field(String name, int geoDbTypeId) {
+        this(name);
+        // todo: find the banding between geoDB type and Java datatype.
     }
 
     private Field(Field field) {
