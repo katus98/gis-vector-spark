@@ -1,5 +1,6 @@
 package com.katus.entity.data;
 
+import com.katus.constant.GeometryType;
 import com.katus.entity.LayerMetadata;
 import com.katus.entity.Pyramid;
 import lombok.Getter;
@@ -27,10 +28,16 @@ import java.util.UUID;
 public class Layer extends JavaPairRDD<String, Feature> implements Serializable {
     private static final int DEFAULT_ZOOM = 8;
     private LayerMetadata metadata;
-    private Boolean isIndexed = false;
+    private boolean isIndexed;
 
-    private Layer(JavaPairRDD<String, Feature> javaPairRDD) {
+    public Layer(JavaPairRDD<String, Feature> javaPairRDD, LayerMetadata metadata) {
+        this(javaPairRDD, metadata, false);
+    }
+
+    public Layer(JavaPairRDD<String, Feature> javaPairRDD, LayerMetadata metadata, boolean isIndexed) {
         super(javaPairRDD.rdd(), ClassTag$.MODULE$.apply(String.class), ClassTag$.MODULE$.apply(Feature.class));
+        this.metadata = metadata;
+        this.isIndexed = isIndexed;
     }
 
     /**
@@ -44,9 +51,8 @@ public class Layer extends JavaPairRDD<String, Feature> implements Serializable 
                 this.mapToPair(pairItem -> {
                     pairItem._2().transform(oriCrs, tarCrs);
                     return pairItem;
-                })
+                }), this.metadata.copy()
         );
-        layer.setMetadata(this.getMetadata());
         layer.getMetadata().setCrs(tarCrs);
         return layer;
     }
@@ -58,7 +64,7 @@ public class Layer extends JavaPairRDD<String, Feature> implements Serializable 
      */
     public Layer index(int z, boolean clip) {
         Pyramid pyramid = new Pyramid(this.metadata.getCrs(), z);
-        Layer layer = new Layer(
+        return new Layer(
                 this.flatMapToPair(pairItem -> {
                     List<Tuple2<String, Feature>> result = new ArrayList<>();
                     Feature oriFeature = pairItem._2();
@@ -81,11 +87,8 @@ public class Layer extends JavaPairRDD<String, Feature> implements Serializable 
                         }
                     }
                     return result.iterator();
-                })
+                }), this.getMetadata().copy(), true
         );
-        layer.setMetadata(this.getMetadata());
-        layer.setIsIndexed(true);
-        return layer;
     }
 
     public Layer index() {
@@ -102,32 +105,7 @@ public class Layer extends JavaPairRDD<String, Feature> implements Serializable 
      * @return new layer
      */
     public static Layer create(JavaPairRDD<String, Feature> javaPairRDD, Field[] fields,
-                               CoordinateReferenceSystem crs, String geometryType, Long featureCount) {
-        Layer layer = new Layer(javaPairRDD);
-        layer.setMetadata(new LayerMetadata(fields, crs, geometryType, featureCount));
-        return layer;
-    }
-
-    public static Layer create(JavaPairRDD<String, Feature> javaPairRDD, Field[] fields,
-                               CoordinateReferenceSystem crs, String geometryType) {
-        return create(javaPairRDD, fields, crs, geometryType, -1L);
-    }
-
-    /**
-     * create a layer
-     * @param javaPairRDD layer content
-     * @param metadata the metadata of the layer
-     * @param isIndexed true if the layer is indexed
-     * @return new layer
-     */
-    public static Layer create(JavaPairRDD<String, Feature> javaPairRDD, LayerMetadata metadata, Boolean isIndexed) {
-        Layer layer = new Layer(javaPairRDD);
-        layer.setMetadata(metadata);
-        layer.setIsIndexed(isIndexed);
-        return layer;
-    }
-
-    public static Layer create(JavaPairRDD<String, Feature> javaPairRDD, LayerMetadata metadata) {
-        return create(javaPairRDD, metadata, false);
+                               CoordinateReferenceSystem crs, GeometryType geometryType, Long featureCount) {
+        return new Layer(javaPairRDD, new LayerMetadata("", fields, crs, geometryType, featureCount));
     }
 }
