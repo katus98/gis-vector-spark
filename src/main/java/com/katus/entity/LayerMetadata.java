@@ -1,6 +1,8 @@
 package com.katus.entity;
 
+import com.katus.constant.GeometryType;
 import com.katus.entity.data.Field;
+import com.katus.io.reader.Reader;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -17,18 +19,22 @@ import java.util.Arrays;
 @Setter
 @Slf4j
 public class LayerMetadata implements Serializable {
-    // todo
-    private String[] fieldNames;
+    private String name;
     private Field[] fields;
     private CoordinateReferenceSystem crs;
-    private String geometryType;
-    private Long featureCount;
+    private GeometryType geometryType;
+    private long featureCount;
 
-    public LayerMetadata(Field[] fields, CoordinateReferenceSystem crs, String geometryType) {
-        this(fields, crs, geometryType, -1L);
+    public LayerMetadata(Reader.ReaderHelper helper) {
+        this(helper, -1L);
     }
 
-    public LayerMetadata(Field[] fields, CoordinateReferenceSystem crs, String geometryType, Long featureCount) {
+    public LayerMetadata(Reader.ReaderHelper helper, long featureCount) {
+        this(helper.getName(), helper.getFields(), helper.getCrs(), helper.getGeometryType(), featureCount);
+    }
+
+    public LayerMetadata(String name, Field[] fields, CoordinateReferenceSystem crs, GeometryType geometryType, long featureCount) {
+        this.name = name;
         this.fields = fields;
         this.crs = crs;
         this.geometryType = geometryType;
@@ -47,9 +53,25 @@ public class LayerMetadata implements Serializable {
     @Override
     public String toString() {
         return "******Metadata******\n" +
-                "------Field Name------\n" + Arrays.toString(fieldNames) + "\n" +
+                "------Field Name------\n" + Arrays.toString(fields) + "\n" +
                 "------Coordinate Reference System (WKT)------\n" + crs + "\n" +
                 "------Geometry Type------\n" + geometryType + "\n" +
                 "------Feature Count------\n" + featureCount + "\n";
+    }
+
+    public LayerMetadata copy() {
+        LayerMetadata copiedMetadata;
+        Field[] fields = new Field[this.getFields().length];
+        for (int i = 0; i < this.getFields().length; i++) {
+            fields[i] = this.getFields()[i].copy();
+        }
+        try {
+            copiedMetadata = (LayerMetadata) this.clone();
+            copiedMetadata.setFields(fields);
+        } catch (CloneNotSupportedException e) {
+            copiedMetadata = new LayerMetadata(this.getName(), fields,
+                    this.getCrs(), this.getGeometryType(), this.getFeatureCount());
+        }
+        return copiedMetadata;
     }
 }
