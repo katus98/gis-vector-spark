@@ -3,6 +3,7 @@ package com.katus.entity.io;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.Serializable;
 import java.lang.reflect.Field;
 
 /**
@@ -12,16 +13,18 @@ import java.lang.reflect.Field;
  */
 @Data
 @Slf4j
-public class Input {
+public class Input implements Serializable {
     private String source = "";
-    private String layers = "";
+    private String layerNames = "";
     private String header = "true";
-    private String geometryFormat = "wkt";
-    private String geometryFields = "wkt";
+    private String geometryFieldFormat = "wkt";
+    private String geometryFieldNames = "wkt";
     private String geometryType = "LineString";
     private String separator = "\t";
     private String charset = "UTF-8";
     private String crs = "4326";
+    private String username = "";
+    private String password = "";
     private String serialField = "";
 
     public Input(String[] args) {
