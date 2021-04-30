@@ -7,7 +7,9 @@ import org.apache.spark.sql.SparkSession;
 /**
  * @author Sun Katus
  * @version 1.0, 2020-11-13
+ * @deprecated 2.0
  */
+@Deprecated
 @NoArgsConstructor
 public abstract class LayerGenerator {
     protected SparkSession ss;
