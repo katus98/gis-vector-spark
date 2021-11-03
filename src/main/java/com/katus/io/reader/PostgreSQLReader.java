@@ -1,27 +1,46 @@
 package com.katus.io.reader;
 
-import lombok.Getter;
+import com.katus.entity.data.Layer;
+import com.katus.entity.data.Table;
+import com.katus.entity.io.InputInfo;
+import com.katus.exception.ParameterNotValidException;
+import org.apache.spark.sql.SparkSession;
 
 /**
- * @author Sun Katus
- * @version 1.0, 2020-12-07
- * @since 1.1
+ * @author SUN Katus
+ * @version 1.0, 2021-04-14
+ * @since 2.0
  */
-@Getter
 public class PostgreSQLReader extends RelationalDatabaseReader {
-    public PostgreSQLReader(String url, String[] tables, String username, String password) {
-        super(url, tables, "org.postgresql.Driver", username, password);
+
+    protected PostgreSQLReader(SparkSession ss, InputInfo inputInfo) {
+        super(ss, inputInfo);
     }
 
-    public PostgreSQLReader(String url, String[] tables, String username, String password, String serialField) {
-        super(url, tables, "org.postgresql.Driver", username, password, serialField);
+    @Override
+    public Layer readToLayer() {
+        if (!isValid()) {
+            throw new ParameterNotValidException(inputInfo);
+        }
+        PostgreSQLReaderHelper readerHelper = this.new PostgreSQLReaderHelper(inputInfo.getSource());
+        return super.readToLayer(readerHelper, readMultipleTables(readerHelper));
     }
 
-    public PostgreSQLReader(String url, String[] tables, String username, String password, String serialField, String[] geometryFields, String crs) {
-        super(url, tables, "org.postgresql.Driver", username, password, serialField, geometryFields, crs);
+    @Override
+    public Table readToTable() {
+        if (!isValid()) {
+            throw new ParameterNotValidException(inputInfo);
+        }
+        PostgreSQLReaderHelper readerHelper = this.new PostgreSQLReaderHelper(inputInfo.getSource());
+        return new Table(readMultipleTables(readerHelper), readerHelper.fields);
     }
 
-    public PostgreSQLReader(String url, String[] tables, String username, String password, String serialField, String[] geometryFields, String crs, Boolean isWkt, String geometryType) {
-        super(url, tables, "org.postgresql.Driver", username, password, serialField, geometryFields, crs, isWkt, geometryType);
+    public class PostgreSQLReaderHelper extends RelationalDatabaseReaderHelper {
+        private static final String JDBC_DRIVER = "org.postgresql.Driver";
+
+        protected PostgreSQLReaderHelper(String source) {
+            super(source, JDBC_DRIVER);
+            super.initAll();
+        }
     }
 }

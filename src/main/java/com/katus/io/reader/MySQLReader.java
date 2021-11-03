@@ -1,24 +1,46 @@
 package com.katus.io.reader;
 
+import com.katus.entity.data.Layer;
+import com.katus.entity.data.Table;
+import com.katus.entity.io.InputInfo;
+import com.katus.exception.ParameterNotValidException;
+import org.apache.spark.sql.SparkSession;
+
 /**
- * @author Sun Katus
- * @version 1.0, 2020-12-08
- * @since 1.1
+ * @author SUN Katus
+ * @version 1.0, 2021-04-13
+ * @since 2.0
  */
 public class MySQLReader extends RelationalDatabaseReader {
-    public MySQLReader(String url, String[] tables, String username, String password) {
-        super(url, tables, "com.mysql.cj.jdbc.Driver", username, password);
+
+    protected MySQLReader(SparkSession ss, InputInfo inputInfo) {
+        super(ss, inputInfo);
     }
 
-    public MySQLReader(String url, String[] tables, String username, String password, String serialField) {
-        super(url, tables, "com.mysql.cj.jdbc.Driver", username, password, serialField);
+    @Override
+    public Layer readToLayer() {
+        if (!isValid()) {
+            throw new ParameterNotValidException(inputInfo);
+        }
+        MySQLReaderHelper readerHelper = this.new MySQLReaderHelper(inputInfo.getSource());
+        return super.readToLayer(readerHelper, readMultipleTables(readerHelper));
     }
 
-    public MySQLReader(String url, String[] tables, String username, String password, String serialField, String[] geometryFields, String crs) {
-        super(url, tables, "com.mysql.cj.jdbc.Driver", username, password, serialField, geometryFields, crs);
+    @Override
+    public Table readToTable() {
+        if (!isValid()) {
+            throw new ParameterNotValidException(inputInfo);
+        }
+        MySQLReaderHelper readerHelper = this.new MySQLReaderHelper(inputInfo.getSource());
+        return new Table(readMultipleTables(readerHelper), readerHelper.fields);
     }
 
-    public MySQLReader(String url, String[] tables, String username, String password, String serialField, String[] geometryFields, String crs, Boolean isWkt, String geometryType) {
-        super(url, tables, "com.mysql.cj.jdbc.Driver", username, password, serialField, geometryFields, crs, isWkt, geometryType);
+    public class MySQLReaderHelper extends RelationalDatabaseReaderHelper {
+        private static final String JDBC_DRIVER = "com.mysql.cj.jdbc.Driver";
+
+        protected MySQLReaderHelper(String source) {
+            super(source, JDBC_DRIVER);
+            super.initAll();
+        }
     }
 }
