@@ -36,10 +36,10 @@
         <hadoop.version>2.7.3</hadoop.version>
         <spark.version>2.3.4</spark.version>
         <scala.version>2.11</scala.version>
-        <lombok.version>1.18.16</lombok.version>
+        <lombok.version>1.18.20</lombok.version>
         <junit.version>4.13.1</junit.version>
-        <mysql.version>8.0.22</mysql.version>
-        <postgresql.version>42.2.18</postgresql.version>
+        <mysql.version>8.0.23</mysql.version>
+        <postgresql.version>42.2.19</postgresql.version>
     </properties>
 
     <repositories>
