@@ -1,45 +1,43 @@
 package com.katus.io.reader;
 
-import com.katus.entity.data.Feature;
+import com.katus.entity.LayerMetadata;
+import com.katus.entity.data.*;
+import com.katus.entity.io.InputInfo;
+import com.katus.exception.ParameterNotValidException;
 import com.katus.util.CrsUtil;
 import com.katus.util.GeometryUtil;
+import com.katus.util.StringUtil;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.sql.SparkSession;
 import org.gdal.gdal.gdal;
-import org.gdal.ogr.*;
+import org.gdal.ogr.DataSource;
+import org.gdal.ogr.FeatureDefn;
+import org.gdal.ogr.Geometry;
+import org.gdal.ogr.ogr;
 import org.locationtech.jts.io.ParseException;
-import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import scala.Tuple2;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
- * @author Sun Katus
- * @version 1.0, 2020-12-23
- * @since 1.2
+ * @author SUN Katus
+ * @version 1.0, 2021-04-14
+ * @since 2.0
  */
-@Getter
-public class GeoDatabaseReader {
-    private final String path;
-    private final String layerName;
-    private Layer layer;
-    private String[] fieldNames;
-    private CoordinateReferenceSystem crs = null;
-    private static final Boolean WITH_FID = false;
+@Slf4j
+public class GeoDatabaseReader extends Reader {
+    private final List<String> layerPathList;
 
-    public GeoDatabaseReader(String pathWithLayerName) {
-        pathWithLayerName = pathWithLayerName.replace("file://", "");
-        int index = pathWithLayerName.lastIndexOf(":");
-        this.path = pathWithLayerName.substring(0, index);
-        this.layerName = pathWithLayerName.substring(index+1);
-        initAll();
-    }
-
-    public GeoDatabaseReader(String path, String layerName) {
-        this.path = path.replace("file://", "");
-        this.layerName = layerName;
-        initAll();
+    protected GeoDatabaseReader(SparkSession ss, InputInfo inputInfo) {
+        super(ss, inputInfo);
+        this.layerPathList = new ArrayList<>();
+        String[] layerNames = inputInfo.getLayerNames();
+        for (String layerName : layerNames) {
+            this.layerPathList.add(inputInfo.getSource() + ":" + layerName);
+        }
     }
 
     static {
@@ -48,47 +46,126 @@ public class GeoDatabaseReader {
         gdal.SetConfigOption("GDAL_FILENAME_IS_UTF8", "YES");
         gdal.SetConfigOption("SHAPE_ENCODING", "GB2312");
     }
-    
-    private void initAll() {
-        DataSource ds = ogr.Open(path);
-        ds = Objects.requireNonNull(ds);
-        try {
-            this.layer = ds.GetLayerByName(layerName);
-            initFields();
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("Read File GeoDatabase Error!");
+
+    @Override
+    public Layer readToLayer() {
+        if (!isValid()) {
+            throw new ParameterNotValidException(inputInfo);
         }
+        JavaSparkContext jsc = JavaSparkContext.fromSparkContext(ss.sparkContext());
+        JavaPairRDD<String, Feature> featuresWithInfo = jsc.parallelize(layerPathList)
+                .flatMapToPair(layerPath -> {
+                    String path = layerPath.substring(0, layerPath.lastIndexOf(":"));
+                    String layerName = layerPath.substring(layerPath.lastIndexOf(":") + 1);
+                    GeoDatabaseReaderHelper readerHelper = new GeoDatabaseReaderHelper(path, layerName);
+                    List<Tuple2<String, Feature>> result = new ArrayList<>();
+                    Feature feature = readerHelper.next();
+                    while (feature != null) {
+                        result.add(new Tuple2<>(feature.getFid(), feature));
+                        feature = readerHelper.next();
+                    }
+                    MetaFeature metaFeature = new MetaFeature();
+                    metaFeature.setReaderHelper(readerHelper);
+                    result.add(new Tuple2<>(MetaFeature.META_ID, metaFeature));
+                    return result.iterator();
+                })
+                .repartition(jsc.defaultParallelism())
+                .cache();
+        long featureCount = featuresWithInfo.count() - layerPathList.size();
+        ReaderHelper readerHelper = ((MetaFeature) featuresWithInfo.filter(pairItem -> pairItem._1().equals(MetaFeature.META_ID)).first()._2()).getReaderHelper();
+        JavaPairRDD<String, Feature> features = featuresWithInfo.filter(pairItem -> !pairItem._1().equals(MetaFeature.META_ID)).cache();
+        featuresWithInfo.unpersist();
+        return new Layer(features, new LayerMetadata(readerHelper, featureCount));
     }
 
-    private void initFields() {
-        FeatureDefn ftd = layer.GetLayerDefn();
-        int fieldCount = ftd.GetFieldCount();
-        List<String> fields = new ArrayList<>();
-        if (WITH_FID) fields.add("FID");
-        for (int i = 0; i < fieldCount; i++) {
-            fields.add(ftd.GetFieldDefn(i).GetName());
+    @Override
+    public Table readToTable() {
+        if (!isValid()) {
+            throw new ParameterNotValidException(inputInfo);
         }
-        this.fieldNames = new String[fields.size()];
-        fields.toArray(this.fieldNames);
+        // todo
+        return null;
     }
 
-    public Feature next() throws ParseException, FactoryException {
-        Feature feature = null;
-        org.gdal.ogr.Feature ft;
-        if ((ft = layer.GetNextFeature()) != null) {
-            feature = new Feature();
-            if (WITH_FID) {
-                feature.setAttribute("FID", ft.GetFID());
-            }
-            for (String fieldName : fieldNames) {
-                if (fieldName.equals("FID") && feature.getAttributes().containsKey("FID")) continue;
-                feature.setAttribute(fieldName, ft.GetFieldAsString(fieldName).replaceAll("[\r\n]", "").replace("\t", " "));
-            }
-            Geometry g = ft.GetGeometryRef();
-            if (crs == null) this.crs = CrsUtil.getByOGCWkt(g.GetSpatialReference().ExportToWkt());
-            feature.setGeometry(GeometryUtil.getGeometryFromText(new String[]{g.ExportToWkt()}, true, ""));
+    @Override
+    public boolean isValid() {
+        return StringUtil.hasMoreThanOne(inputInfo.getLayerNames()) && Objects.nonNull(inputInfo.getGeometryType())
+                && Objects.nonNull(inputInfo.getCharset()) && Objects.nonNull(inputInfo.getCrs());
+    }
+
+    @Getter
+    public class GeoDatabaseReaderHelper extends ReaderHelper {
+        private final String layerName;
+        private transient org.gdal.ogr.Layer layer;
+
+        public GeoDatabaseReaderHelper(String source, String layerName) {
+            super(source);
+            super.source = source.startsWith("file://") ?
+                    source.substring(7, source.length()-4) :
+                    source.substring(0, source.length()-4);
+            this.layerName = layerName;
+            super.initAll();
         }
-        return feature;
+
+        @Override
+        protected void initCharset() {
+            super.charset = inputInfo.getCharset();
+        }
+
+        @Override
+        protected void initReader() {
+            DataSource ds = ogr.Open(source);
+            Objects.requireNonNull(ds);
+            try {
+                this.layer = ds.GetLayerByName(layerName);
+            } catch (Exception e) {
+                String msg = "Fail to read File GeoDatabase!";
+                log.error(msg, e);
+                throw new RuntimeException(msg, e);
+            }
+        }
+
+        @Override
+        protected void initFields() {
+            FeatureDefn ftd = layer.GetLayerDefn();
+            int fieldCount = ftd.GetFieldCount();
+            super.fields = new Field[fieldCount];
+            for (int i = 0; i < fieldCount; i++) {
+                super.fields[i] = new Field(ftd.GetFieldDefn(i).GetName(), ftd.GetFieldDefn(i).GetFieldType());
+            }
+        }
+
+        @Override
+        protected void initCrs() {
+            try {
+                super.crs = CrsUtil.getByOGCWkt(layer.GetSpatialRef().ExportToWkt());
+            } catch (Exception e) {
+                String msg = "Fail to read spatial reference of the geo database.";
+                log.warn(msg, e);
+                super.crs = CrsUtil.getByCode(inputInfo.getCrs());
+            }
+        }
+
+        @Override
+        protected void initGeometryType() {
+            // todo: verify the geometry type of geo database.
+            super.geometryType = inputInfo.getGeometryType();
+        }
+
+        public Feature next() throws ParseException {
+            Feature feature = null;
+            org.gdal.ogr.Feature ft;
+            if ((ft = layer.GetNextFeature()) != null) {
+                feature = new Feature(((Long) ft.GetFID()).toString());
+                for (Field field : fields) {
+                    feature.addAttribute(field, ft.GetFieldAsString(field.getName())
+                            .replaceAll("[\r\n]", "").replace("\t", " "));
+                }
+                Geometry g = ft.GetGeometryRef();
+                feature.setGeometry(GeometryUtil.getGeometryFromText(new String[]{g.ExportToWkt()},
+                        inputInfo.getGeometryFieldFormat(), geometryType));
+            }
+            return feature;
+        }
     }
 }
