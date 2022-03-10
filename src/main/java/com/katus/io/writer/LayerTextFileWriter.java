@@ -1,6 +1,7 @@
 package com.katus.io.writer;
 
 import com.katus.entity.data.Feature;
+import com.katus.entity.data.Field;
 import com.katus.entity.data.Layer;
 import com.katus.entity.LayerMetadata;
 import com.katus.util.fs.FsManipulator;
@@ -18,6 +19,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -54,7 +56,7 @@ public class LayerTextFileWriter implements Serializable {
 
     public void writeToDirByMap(Layer layer, Boolean withHeader, Boolean withKey, Boolean withGeometry) throws IOException {
         String filename = initDir();
-        String[] fieldNames = layer.getMetadata().getFieldNames();
+        String[] fieldNames = Arrays.stream(layer.getMetadata().getFields()).map(Field::toString).toArray(String[]::new);
         JavaRDD<String> outputContent = getOutputContent(layer, withKey, withGeometry);
         List<String> outputInfo = outputContent.mapPartitionsWithIndex((index, it) -> {
             List<String> result = new ArrayList<>();
@@ -124,7 +126,8 @@ public class LayerTextFileWriter implements Serializable {
         }
         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fsManipulator.write(pathURI, false)));
         if (withHeader) {
-            String title = getTitleLine(layer.getMetadata().getFieldNames(), withKey, withGeometry);
+            String[] fieldNames = Arrays.stream(layer.getMetadata().getFields()).map(Field::toString).toArray(String[]::new);
+            String title = getTitleLine(fieldNames, withKey, withGeometry);
             writer.write(title + "\n");
         }
         JavaRDD<String> outputContent = getOutputContent(layer, withKey, withGeometry);
@@ -148,7 +151,8 @@ public class LayerTextFileWriter implements Serializable {
     public void writeToFileByCollect(Layer layer, Boolean withHeader, Boolean withKey, Boolean withGeometry) throws IOException {
         List<String> allContent = new ArrayList<>();
         if (withHeader) {
-            String title = getTitleLine(layer.getMetadata().getFieldNames(), withKey, withGeometry);
+            String[] fieldNames = Arrays.stream(layer.getMetadata().getFields()).map(Field::toString).toArray(String[]::new);
+            String title = getTitleLine(fieldNames, withKey, withGeometry);
             allContent.add(title);
         }
         List<String> content = getOutputContent(layer, withKey, withGeometry).collect();
