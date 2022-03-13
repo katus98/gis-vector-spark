@@ -1,6 +1,6 @@
 package com.katus.model.base;
 
-import com.katus.entity.Layer;
+import com.katus.entity.data.Layer;
 
 /**
  * @author Sun Katus
