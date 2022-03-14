@@ -4,9 +4,14 @@ import com.katus.entity.data.Feature;
 import com.katus.entity.data.Field;
 import com.katus.entity.data.Layer;
 import com.katus.entity.LayerMetadata;
+import com.katus.io.reader.Reader;
+import com.katus.io.reader.ReaderFactory;
 import com.katus.io.writer.LayerTextFileWriter;
 import com.katus.model.dmt.args.MergeArgs;
-import com.katus.util.*;
+import com.katus.util.AttributeUtil;
+import com.katus.util.CrsUtil;
+import com.katus.util.FieldUtil;
+import com.katus.util.SparkUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.sql.SparkSession;
@@ -19,6 +24,7 @@ import java.util.HashMap;
  */
 @Slf4j
 public class Merge {
+
     public static void main(String[] args) throws Exception {
         log.info("Setup Spark Session");
         SparkSession ss = SparkUtil.getSparkSession();
@@ -32,12 +38,13 @@ public class Merge {
         }
 
         log.info("Make layers");
-        Layer layer1 = InputUtil.makeLayer(ss, mArgs.getInput1());
-        Layer layer2 = InputUtil.makeLayer(ss, mArgs.getInput2());
+        Reader reader1 = ReaderFactory.create(ss, mArgs.getInput1());
+        Reader reader2 = ReaderFactory.create(ss, mArgs.getInput2());
+        Layer layer1 = reader1.readToLayer();
+        Layer layer2 = reader2.readToLayer();
 
         log.info("Dimension check");
-        if (GeometryUtil.getDimensionOfGeomType(layer1.getMetadata().getGeometryType()) !=
-                GeometryUtil.getDimensionOfGeomType(layer2.getMetadata().getGeometryType())) {
+        if (layer1.getMetadata().getGeometryType().getDimension() != layer2.getMetadata().getGeometryType().getDimension()) {
             String msg = "Two layers must have the same dimension, exit!";
             log.error(msg);
             throw new RuntimeException(msg);
