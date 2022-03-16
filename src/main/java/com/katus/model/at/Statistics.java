@@ -1,16 +1,18 @@
 package com.katus.model.at;
 
 import com.katus.constant.FieldMark;
+import com.katus.constant.GeometryType;
 import com.katus.constant.StatisticalMethod;
 import com.katus.entity.data.Feature;
 import com.katus.entity.data.Field;
 import com.katus.entity.data.Layer;
 import com.katus.entity.LayerMetadata;
+import com.katus.io.reader.Reader;
+import com.katus.io.reader.ReaderFactory;
 import com.katus.io.writer.LayerTextFileWriter;
 import com.katus.model.at.args.StatisticsArgs;
 import com.katus.util.AttributeUtil;
 import com.katus.util.FieldUtil;
-import com.katus.util.InputUtil;
 import com.katus.util.SparkUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.spark.api.java.JavaPairRDD;
@@ -26,6 +28,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 public class Statistics {
+
     public static void main(String[] args) throws Exception {
         log.info("Setup Spark Session");
         SparkSession ss = SparkUtil.getSparkSession();
@@ -39,7 +42,8 @@ public class Statistics {
         }
 
         log.info("Make layers");
-        Layer inputLayer = InputUtil.makeLayer(ss, mArgs.getInput());
+        Reader reader = ReaderFactory.create(ss, mArgs.getInput());
+        Layer inputLayer = reader.readToLayer();
 
         log.info("Prepare calculation");
         Field[] categoryFields = Arrays
@@ -115,6 +119,6 @@ public class Statistics {
         } else {
             result = result.cache();
         }
-        return Layer.create(result, fields, metadata.getCrs(), "None", result.count());
+        return Layer.create(result, fields, metadata.getCrs(), GeometryType.NONE, result.count());
     }
 }

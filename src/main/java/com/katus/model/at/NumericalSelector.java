@@ -6,9 +6,10 @@ import com.katus.entity.data.Feature;
 import com.katus.entity.data.Field;
 import com.katus.entity.data.Layer;
 import com.katus.entity.LayerMetadata;
+import com.katus.io.reader.Reader;
+import com.katus.io.reader.ReaderFactory;
 import com.katus.io.writer.LayerTextFileWriter;
 import com.katus.model.at.args.NumericalSelectorArgs;
-import com.katus.util.InputUtil;
 import com.katus.util.SparkUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.spark.api.java.JavaPairRDD;
@@ -22,6 +23,7 @@ import java.lang.reflect.Method;
  */
 @Slf4j
 public class NumericalSelector {
+
     public static void main(String[] args) throws Exception {
         log.info("Setup Spark Session");
         SparkSession ss = SparkUtil.getSparkSession();
@@ -35,7 +37,8 @@ public class NumericalSelector {
         }
 
         log.info("Make layers");
-        Layer inputLayer = InputUtil.makeLayer(ss, mArgs.getInput());
+        Reader reader = ReaderFactory.create(ss, mArgs.getInput());
+        Layer inputLayer = reader.readToLayer();
 
         log.info("Prepare calculation");
         Field selectField = inputLayer.getMetadata().getFieldByName(mArgs.getSelectField());

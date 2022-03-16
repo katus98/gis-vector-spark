@@ -4,6 +4,8 @@ import com.katus.entity.data.Feature;
 import com.katus.entity.data.Field;
 import com.katus.entity.data.Layer;
 import com.katus.entity.LayerMetadata;
+import com.katus.io.reader.Reader;
+import com.katus.io.reader.ReaderFactory;
 import com.katus.io.writer.LayerTextFileWriter;
 import com.katus.model.gpt.args.IntersectionArgs;
 import com.katus.util.*;
@@ -21,6 +23,7 @@ import java.util.LinkedHashMap;
  */
 @Slf4j
 public class Intersection {
+
     public static void main(String[] args) throws Exception {
         log.info("Setup Spark Session");
         SparkSession ss = SparkUtil.getSparkSession();
@@ -34,8 +37,10 @@ public class Intersection {
         }
 
         log.info("Make layers");
-        Layer inputLayer = InputUtil.makeLayer(ss, mArgs.getInput1());
-        Layer overlayLayer = InputUtil.makeLayer(ss, mArgs.getInput2());
+        Reader reader1 = ReaderFactory.create(ss, mArgs.getInput1());
+        Reader reader2 = ReaderFactory.create(ss, mArgs.getInput2());
+        Layer inputLayer = reader1.readToLayer();
+        Layer overlayLayer = reader2.readToLayer();
 
         log.info("Prepare calculation");
         if (!mArgs.getInput1().getCrs().equals(mArgs.getInput2().getCrs())) {
@@ -57,8 +62,8 @@ public class Intersection {
     public static Layer intersection(Layer layer1, Layer layer2) {
         LayerMetadata metadata1 = layer1.getMetadata();
         LayerMetadata metadata2 = layer2.getMetadata();
-        int dimension1 = GeometryUtil.getDimensionOfGeomType(metadata1.getGeometryType());
-        int dimension2 = GeometryUtil.getDimensionOfGeomType(metadata2.getGeometryType());
+        int dimension1 = metadata1.getGeometryType().getDimension();
+        int dimension2 = metadata2.getGeometryType().getDimension();
         int dimension = Math.min(dimension1, dimension2);
         Field[] fields = FieldUtil.merge(metadata1.getFields(), metadata2.getFields());
         JavaPairRDD<String, Feature> result = layer1.join(layer2)
@@ -73,6 +78,7 @@ public class Intersection {
                         key = targetFeature.getFid() + "#" + extentFeature.getFid();
                         LinkedHashMap<Field, Object> attributes = AttributeUtil.merge(fields, targetFeature.getAttributes(), extentFeature.getAttributes());
                         Geometry inter = geoExtent.intersection(geoTarget);
+                        // todo: a more proper method needed.
                         inter = GeometryUtil.breakByDimension(inter, dimension);
                         feature = new Feature(targetFeature.getFid(), attributes, inter);
                     } else {

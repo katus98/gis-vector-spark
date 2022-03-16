@@ -1,11 +1,13 @@
 package com.katus.model.gpt;
 
+import com.katus.constant.GeometryType;
 import com.katus.entity.data.Feature;
 import com.katus.entity.data.Layer;
 import com.katus.entity.LayerMetadata;
+import com.katus.io.reader.Reader;
+import com.katus.io.reader.ReaderFactory;
 import com.katus.io.writer.LayerTextFileWriter;
 import com.katus.model.gpt.args.ConvexHullArgs;
-import com.katus.util.InputUtil;
 import com.katus.util.SparkUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.spark.api.java.JavaPairRDD;
@@ -19,6 +21,7 @@ import scala.Tuple2;
  */
 @Slf4j
 public class ConvexHull {
+
     public static void main(String[] args) throws Exception {
         log.info("Setup Spark Session");
         SparkSession ss = SparkUtil.getSparkSession();
@@ -32,7 +35,8 @@ public class ConvexHull {
         }
 
         log.info("Make layers");
-        Layer inputLayer = InputUtil.makeLayer(ss, mArgs.getInput());
+        Reader reader = ReaderFactory.create(ss, mArgs.getInput());
+        Layer inputLayer = reader.readToLayer();
 
         log.info("Start Calculation");
         Layer layer = convexHull(inputLayer);
@@ -46,7 +50,7 @@ public class ConvexHull {
 
     public static Layer convexHull(Layer layer) {
         LayerMetadata metadata = layer.getMetadata();
-        String geometryType = metadata.getGeometryType().equalsIgnoreCase("Point") ? "Point" : "Polygon";
+        GeometryType geometryType = metadata.getGeometryType().equals(GeometryType.POINT) ? GeometryType.POINT : GeometryType.POLYGON;
         JavaPairRDD<String, Feature> result = layer
                 .mapToPair(pairItem -> {
                     Feature feature = pairItem._2();

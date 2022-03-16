@@ -1,11 +1,13 @@
 package com.katus.model.gt;
 
+import com.katus.constant.GeometryType;
 import com.katus.entity.data.Feature;
 import com.katus.entity.data.Layer;
 import com.katus.entity.LayerMetadata;
+import com.katus.io.reader.Reader;
+import com.katus.io.reader.ReaderFactory;
 import com.katus.io.writer.LayerTextFileWriter;
 import com.katus.model.gt.args.MultiToSingleArgs;
-import com.katus.util.InputUtil;
 import com.katus.util.SparkUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.spark.api.java.JavaPairRDD;
@@ -22,6 +24,7 @@ import java.util.List;
  */
 @Slf4j
 public class MultiToSingle {
+
     public static void main(String[] args) throws Exception {
         log.info("Setup Spark Session");
         SparkSession ss = SparkUtil.getSparkSession();
@@ -35,7 +38,8 @@ public class MultiToSingle {
         }
 
         log.info("Make layers");
-        Layer inputLayer = InputUtil.makeLayer(ss, mArgs.getInput());
+        Reader reader = ReaderFactory.create(ss, mArgs.getInput());
+        Layer inputLayer = reader.readToLayer();
 
         log.info("Start Calculation");
         Layer layer = multiToSingle(inputLayer);
@@ -60,7 +64,7 @@ public class MultiToSingle {
                     return resultList.iterator(); 
                 })
                 .cache();
-        String geometryType = metadata.getGeometryType().replace("Multi", "");
+        GeometryType geometryType = metadata.getGeometryType().getBasicByDimension();
         return Layer.create(result, metadata.getFields(), metadata.getCrs(), geometryType, result.count());
     }
 }

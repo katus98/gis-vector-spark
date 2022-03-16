@@ -1,12 +1,14 @@
 package com.katus.model.gpt;
 
+import com.katus.constant.GeometryType;
 import com.katus.entity.data.Feature;
 import com.katus.entity.data.Layer;
 import com.katus.entity.LayerMetadata;
+import com.katus.io.reader.Reader;
+import com.katus.io.reader.ReaderFactory;
 import com.katus.io.writer.LayerTextFileWriter;
 import com.katus.model.gpt.args.BufferArgs;
 import com.katus.util.CrsUtil;
-import com.katus.util.InputUtil;
 import com.katus.util.SparkUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.spark.api.java.JavaPairRDD;
@@ -19,6 +21,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  */
 @Slf4j
 public class Buffer {
+
     public static void main(String[] args) throws Exception {
         log.info("Setup Spark Session");
         SparkSession ss = SparkUtil.getSparkSession();
@@ -32,7 +35,8 @@ public class Buffer {
         }
 
         log.info("Make layers");
-        Layer inputLayer = InputUtil.makeLayer(ss, mArgs.getInput());
+        Reader reader = ReaderFactory.create(ss, mArgs.getInput());
+        Layer inputLayer = reader.readToLayer();
 
         log.info("Prepare calculation");
         CoordinateReferenceSystem oriCrs = inputLayer.getMetadata().getCrs();
@@ -64,6 +68,6 @@ public class Buffer {
             pairItem._2().setGeometry(pairItem._2().getGeometry().buffer(distance));
             return pairItem;
         }).cache();
-        return Layer.create(result, metadata.getFields(), metadata.getCrs(), "Polygon", metadata.getFeatureCount());
+        return Layer.create(result, metadata.getFields(), metadata.getCrs(), GeometryType.POLYGON, metadata.getFeatureCount());
     }
 }

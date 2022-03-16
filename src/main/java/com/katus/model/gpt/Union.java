@@ -4,6 +4,8 @@ import com.katus.entity.data.Feature;
 import com.katus.entity.data.Field;
 import com.katus.entity.data.Layer;
 import com.katus.entity.LayerMetadata;
+import com.katus.io.reader.Reader;
+import com.katus.io.reader.ReaderFactory;
 import com.katus.io.writer.LayerTextFileWriter;
 import com.katus.model.dmt.Merge;
 import com.katus.model.gpt.args.UnionArgs;
@@ -25,6 +27,7 @@ import java.util.List;
  */
 @Slf4j
 public class Union {
+
     public static void main(String[] args) throws Exception {
         log.info("Setup Spark Session");
         SparkSession ss = SparkUtil.getSparkSession();
@@ -38,12 +41,13 @@ public class Union {
         }
 
         log.info("Make layers");
-        Layer inputLayer = InputUtil.makeLayer(ss, mArgs.getInput1());
-        Layer overlayLayer = InputUtil.makeLayer(ss, mArgs.getInput2());
+        Reader reader1 = ReaderFactory.create(ss, mArgs.getInput1());
+        Reader reader2 = ReaderFactory.create(ss, mArgs.getInput2());
+        Layer inputLayer = reader1.readToLayer();
+        Layer overlayLayer = reader2.readToLayer();
 
         log.info("Dimension check");
-        if (GeometryUtil.getDimensionOfGeomType(inputLayer.getMetadata().getGeometryType()) !=
-                GeometryUtil.getDimensionOfGeomType(overlayLayer.getMetadata().getGeometryType())) {
+        if (inputLayer.getMetadata().getGeometryType().getDimension() != overlayLayer.getMetadata().getGeometryType().getDimension()) {
             String msg = "Two layers must have the same dimension, exit!";
             log.error(msg);
             throw new RuntimeException(msg);
@@ -76,7 +80,7 @@ public class Union {
     public static Layer unionWithClippedIndex(Layer indexedLayer1, Layer indexedLayer2) {
         LayerMetadata metadata1 = indexedLayer1.getMetadata();
         LayerMetadata metadata2 = indexedLayer2.getMetadata();
-        int dimension = GeometryUtil.getDimensionOfGeomType(metadata1.getGeometryType());
+        int dimension = metadata1.getGeometryType().getDimension();
         Field[] fields = FieldUtil.merge(metadata1.getFields(), metadata2.getFields());
         JavaPairRDD<String, Feature> result = indexedLayer1.fullOuterJoin(indexedLayer2)
                 .flatMapToPair(fullPairItems -> {

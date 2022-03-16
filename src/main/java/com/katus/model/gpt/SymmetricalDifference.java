@@ -4,6 +4,8 @@ import com.katus.entity.data.Feature;
 import com.katus.entity.data.Field;
 import com.katus.entity.data.Layer;
 import com.katus.entity.LayerMetadata;
+import com.katus.io.reader.Reader;
+import com.katus.io.reader.ReaderFactory;
 import com.katus.io.writer.LayerTextFileWriter;
 import com.katus.model.gpt.args.SymmetricalDifferenceArgs;
 import com.katus.util.*;
@@ -24,6 +26,7 @@ import java.util.List;
  */
 @Slf4j
 public class SymmetricalDifference {
+
     public static void main(String[] args) throws Exception {
         log.info("Setup Spark Session");
         SparkSession ss = SparkUtil.getSparkSession();
@@ -37,12 +40,14 @@ public class SymmetricalDifference {
         }
 
         log.info("Make layers");
-        Layer inputLayer = InputUtil.makeLayer(ss, mArgs.getInput1());
-        Layer overlayLayer = InputUtil.makeLayer(ss, mArgs.getInput2());
+        Reader reader1 = ReaderFactory.create(ss, mArgs.getInput1());
+        Reader reader2 = ReaderFactory.create(ss, mArgs.getInput2());
+        Layer inputLayer = reader1.readToLayer();
+        Layer overlayLayer = reader2.readToLayer();
 
         log.info("Dimension check");
-        if (GeometryUtil.getDimensionOfGeomType(inputLayer.getMetadata().getGeometryType()) != 2 ||
-                GeometryUtil.getDimensionOfGeomType(overlayLayer.getMetadata().getGeometryType()) != 2) {
+        if (inputLayer.getMetadata().getGeometryType().getDimension() != 2 ||
+                overlayLayer.getMetadata().getGeometryType().getDimension() != 2) {
             String msg = "Geometry dimension must be 2, exit!";
             log.error(msg);
             throw new RuntimeException(msg);

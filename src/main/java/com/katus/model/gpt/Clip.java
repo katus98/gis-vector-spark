@@ -3,11 +3,12 @@ package com.katus.model.gpt;
 import com.katus.entity.data.Feature;
 import com.katus.entity.data.Layer;
 import com.katus.entity.LayerMetadata;
+import com.katus.io.reader.Reader;
+import com.katus.io.reader.ReaderFactory;
 import com.katus.io.writer.LayerTextFileWriter;
 import com.katus.model.gpt.args.ClipArgs;
 import com.katus.util.CrsUtil;
 import com.katus.util.GeometryUtil;
-import com.katus.util.InputUtil;
 import com.katus.util.SparkUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.spark.api.java.JavaPairRDD;
@@ -21,6 +22,7 @@ import scala.Tuple2;
  */
 @Slf4j
 public class Clip {
+
     public static void main(String[] args) throws Exception {
         log.info("Setup Spark Session");
         SparkSession ss = SparkUtil.getSparkSession();
@@ -34,11 +36,13 @@ public class Clip {
         }
 
         log.info("Make layers");
-        Layer inputLayer = InputUtil.makeLayer(ss, mArgs.getInput1());
-        Layer overlayLayer = InputUtil.makeLayer(ss, mArgs.getInput2());
+        Reader reader1 = ReaderFactory.create(ss, mArgs.getInput1());
+        Reader reader2 = ReaderFactory.create(ss, mArgs.getInput2());
+        Layer inputLayer = reader1.readToLayer();
+        Layer overlayLayer = reader2.readToLayer();
 
         log.info("Dimension check");
-        if (GeometryUtil.getDimensionOfGeomType(overlayLayer.getMetadata().getGeometryType()) != 2) {
+        if (overlayLayer.getMetadata().getGeometryType().getDimension() != 2) {
             String msg = "Extent Geometry dimension must be 2, exit!";
             log.error(msg);
             throw new RuntimeException(msg);
@@ -63,7 +67,7 @@ public class Clip {
 
     public static Layer clip(Layer tarIndLayer, Layer extIndLayer) {
         LayerMetadata metadata = tarIndLayer.getMetadata();
-        int dimension = GeometryUtil.getDimensionOfGeomType(metadata.getGeometryType());
+        int dimension = metadata.getGeometryType().getDimension();
         JavaPairRDD<String, Feature> result = tarIndLayer.join(extIndLayer)
                 .mapToPair(pairItems -> {
                     Feature targetFeature = pairItems._2()._1();
